@@ -1,0 +1,1365 @@
+<!doctype html>
+<html lang="en" data-bg="light">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#F5F3EE">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Preeti Ramesh, applied machine learning for physiological signals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050B16; --bg-2:#0A1628; --bg-3:#0F1F36; --line:#22364F; --figure:#6F8AAE;
+  --text:#E6EDF5; --muted:#97A8BF; --sig:#5CDDEB; --teal:#3FC3AB; --warm:#E9B67F; --tool:#93A6EA;
+  --serif:"Newsreader", "Iowan Old Style", Georgia, serif;
+  --sans:"Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+/* The site is intentionally dark in both viewer themes. */
+/* Background themes. Midnight is the default; the site is themed by choice, not by the viewer's OS setting. */
+:root{ --glow:#0C1C35; }
+:root[data-bg="ocean"]{ --bg:#031716; --bg-2:#072523; --bg-3:#0B2F2C; --line:#1B403C; --figure:#6FA5A0; --text:#E3F1EE; --muted:#93B6B1; --sig:#63E3D4; --teal:#55D3A6; --warm:#F0BA8A; --tool:#A2B4F0; --glow:#0A332F; }
+:root[data-bg="plum"]{ --bg:#0D0912; --bg-2:#17101F; --bg-3:#1F1629; --line:#342849; --figure:#9285B2; --text:#EFEAF5; --muted:#AEA3C2; --sig:#7FDAF0; --teal:#6ED0B8; --warm:#F2B788; --tool:#B9A9F2; --glow:#24173A; }
+:root[data-bg="graphite"]{ --bg:#0B0C0E; --bg-2:#141618; --bg-3:#1B1E21; --line:#2D3136; --figure:#8B949D; --text:#ECEDEE; --muted:#A4A9AF; --sig:#5DD8E8; --teal:#4CC9AE; --warm:#EDB47E; --tool:#9DAEEB; --glow:#1A1E23; }
+:root[data-bg="light"]{ --bg:#F5F3EE; --bg-2:#FFFFFF; --bg-3:#EEEBE4; --line:#D8D3C8; --figure:#7A889A; --text:#152131; --muted:#54606F; --sig:#0A7B8B; --teal:#11806B; --warm:#A55C1B; --tool:#4D5DB5; --glow:#E3ECF0; color-scheme:light; }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px); scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:17px; line-height:1.6;
+  background-image:radial-gradient(55% 45% at 50% 38%, var(--glow) 0%, transparent 70%); transition:background-color .4s;
+  background-repeat:no-repeat; -webkit-font-smoothing:antialiased;
+}
+a{ color:var(--sig); }
+:focus-visible{ outline:2px solid var(--sig); outline-offset:3px; border-radius:4px; }
+.sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.q{ display:inline-block; margin:.25rem 0; padding:.15rem .55rem; border:1px dashed var(--warm); border-radius:6px; color:var(--warm); font-size:.82rem; line-height:1.4; }
+
+/* nav */
+header.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:20; display:flex; align-items:center; justify-content:space-between;
+  padding:.9rem clamp(1rem,4vw,3rem); background:color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+.brand{ font-family:var(--serif); font-size:1.15rem; color:var(--text); text-decoration:none; letter-spacing:.01em; }
+nav ul{ display:flex; gap:1.6rem; list-style:none; margin:0; padding:0; }
+nav a{ color:var(--muted); text-decoration:none; font-size:.92rem; }
+nav a:hover{ color:var(--text); }
+.menu-btn{ display:none; background:none; border:1px solid var(--line); color:var(--text); border-radius:8px; padding:.4rem .8rem; font:inherit; font-size:.9rem; }
+@media (max-width: 900px){
+  .menu-btn{ display:block; }
+  nav ul{ display:none; position:absolute; right:1rem; top:100%; flex-direction:column; gap:.2rem; background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:.6rem; min-width:200px; }
+  nav ul.open{ display:flex; }
+  nav a{ display:block; padding:.5rem .7rem; }
+}
+
+/* hero */
+.hero{
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,.95fr); gap:clamp(1rem,2.5vw,2.5rem);
+  grid-template-areas:"intro time time" "intro map insp"; align-items:center; min-height:calc(100vh - 64px); padding:clamp(1.5rem,3vw,2.5rem) clamp(1rem,4vw,3rem);
+  max-width:1500px; margin:0 auto;
+}
+.intro h1{
+  font-family:var(--serif); font-weight:300; font-size:clamp(2.1rem,3.4vw,3.3rem); line-height:1.08; letter-spacing:-.015em; margin:0 0 1.2rem; max-width:14ch;
+}
+.intro p.lede{ color:var(--muted); max-width:38ch; margin:0 0 2rem; }
+.pipeline{ list-style:none; margin:0; padding:0 0 0 1.1rem; border-left:1px solid var(--line); position:relative; max-width:34ch; }
+.pipeline li{ position:relative; padding:.35rem 0 .75rem; }
+.pipeline li::before{ content:""; position:absolute; left:calc(-1.1rem - 4px); top:.85rem; width:7px; height:7px; border-radius:50%; background:var(--bg); border:1px solid var(--figure); }
+.pipeline .step{ display:block; font-size:.95rem; }
+.pipeline .detail{ display:block; color:var(--muted); font-size:.85rem; min-height:1.35em; transition:color .3s; }
+.pipeline.is-active .detail{ color:var(--sig); }
+.pipe-wrap{ position:relative; max-width:34ch; }
+.pipe-wrap .pulse{ position:absolute; left:-3px; top:.8rem; width:7px; height:7px; border-radius:50%; background:var(--sig); box-shadow:0 0 10px var(--sig); opacity:0; }
+.pipe-wrap .pulse.run{ animation:travel 3.4s cubic-bezier(.6,0,.4,1) 1 forwards; }
+@keyframes travel{ 0%{ top:.8rem; opacity:0 } 10%{ opacity:1 } 90%{ opacity:1 } 100%{ top:calc(100% - 1.5rem); opacity:0 } }
+
+/* body map */
+.map{ position:relative; }
+.map svg{ display:block; width:100%; height:auto; max-height:84vh; margin:0 auto; overflow:visible; }
+.sil{ fill:none; stroke:var(--figure); stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; opacity:.75; transition:opacity .4s; }
+.skinfill{ fill:url(#skin); stroke:none; }
+.anat{ fill:none; stroke:var(--figure); stroke-width:.8; opacity:.28; stroke-linecap:round; }
+.halo-soft{ fill:none; stroke:var(--sig); stroke-width:14; opacity:.035; }
+.organ{ fill:none; stroke:var(--figure); stroke-width:.9; opacity:.45; transition:stroke .35s, opacity .35s; }
+.vert{ fill:var(--figure); opacity:.35; transition:fill .35s, opacity .35s; }
+.fx{ fill:none; stroke:var(--sig); stroke-width:1.2; opacity:0; transition:opacity .35s; stroke-linecap:round; }
+.r-halo{ fill:none; stroke:var(--warm); stroke-width:1; stroke-dasharray:3 6; opacity:0; transition:opacity .4s; }
+.r-ans{ fill:none; stroke:var(--teal); stroke-width:1; stroke-dasharray:2 5; opacity:0; transition:opacity .4s; }
+.hot{ cursor:pointer; }
+#hits *{ fill:#000; fill-opacity:0; }
+.node .ring{ fill:var(--bg); stroke:var(--line); stroke-width:1; transition:stroke .3s; }
+.node .ico{ fill:none; stroke:var(--text); stroke-opacity:.85; stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; transition:stroke .3s; }
+.node text{ fill:var(--muted); font:500 14px var(--sans); text-anchor:middle; transition:fill .3s; }
+.node.is-on .ring{ stroke:var(--sig); }
+.node.is-on .ico{ stroke:var(--sig); }
+.node.is-on text{ fill:var(--text); }
+.node.warm.is-on .ring, .node.warm.is-on .ico{ stroke:var(--warm); }
+.node.toolnode.is-on .ring, .node.toolnode.is-on .ico{ stroke:var(--tool); }
+.node.hot .ring{ fill:var(--bg); fill-opacity:1; }
+.link{ fill:none; stroke:var(--sig); stroke-width:.9; stroke-dasharray:2 6; opacity:.65; animation:fadein .5s ease-out both; }
+.link-dot{ fill:var(--sig); animation:fadeout 1.6s ease-in forwards; }
+.link-dot.warm{ fill:var(--warm); } .link-dot.toolc{ fill:var(--tool); }
+@keyframes fadein{ from{ opacity:0 } } @keyframes fadeout{ 0%,75%{ opacity:1 } 100%{ opacity:0 } }
+.link.warm{ stroke:var(--warm); }
+.link.toolc{ stroke:var(--tool); }
+@keyframes flow{ to{ stroke-dashoffset:-16; } }
+
+svg[data-active] .sil{ opacity:.45; }
+svg[data-active] .organ{ opacity:.25; }
+svg[data-active="eeg"] .r-brain,
+svg[data-active="lungs"] .r-lungs,
+svg[data-active="emg"] .r-spine, svg[data-active="emg"] .r-legs,
+svg[data-active="eda"] .r-hand,
+svg[data-active="stress"] .r-heart, svg[data-active="stress"] .r-hand{ stroke:var(--sig); opacity:1; filter:url(#glow); }
+svg[data-active="emg"] .vert{ fill:var(--sig); opacity:.9; }
+svg[data-active="levitt"] .r-heart{ stroke:var(--warm); opacity:.8; }
+svg[data-active="eeg"] .fx-eeg, svg[data-active="emg"] .fx-stim, svg[data-active="eda"] .fx-eda,
+svg[data-active="stress"] .fx-pulse, svg[data-active="stress"] .fx-eda{ opacity:.95; }
+svg[data-active="stress"] .r-ans{ opacity:.9; }
+svg[data-active="bd"] .r-halo{ opacity:.9; }
+.fx-eeg{ stroke-dasharray:130; stroke-dashoffset:130; }
+svg[data-active="eeg"] .fx-eeg{ animation:draw 1.8s ease-out forwards; }
+@keyframes draw{ to{ stroke-dashoffset:0 } }
+.fx-stim{ stroke-dasharray:5 16; }
+svg[data-active="emg"] .fx-stim{ animation:flow-down 1.6s linear 2; }
+@keyframes flow-down{ to{ stroke-dashoffset:-21; } }
+.r-lungs-g{ transform-box:view-box; transform-origin:400px 250px; }
+svg[data-active="lungs"] .r-lungs-g{ animation:breathe 5s ease-in-out 2; }
+@keyframes breathe{ 0%,100%{ transform:scale(1) } 45%{ transform:scale(1.045) } }
+.fx-pulse{ transform-box:fill-box; transform-origin:center; }
+svg[data-active="stress"] .fx-pulse{ animation:ping 1.3s ease-out 2 forwards; }
+@keyframes ping{ 0%{ transform:scale(.6); opacity:.9 } 100%{ transform:scale(2.2); opacity:0 } }
+.fx-eda circle{ fill:var(--sig); stroke:none; }
+svg[data-active="eda"] .fx-eda circle, svg[data-active="stress"] .fx-eda circle{ animation:sweat 2.6s ease-in-out 2; }
+.fx-eda circle:nth-child(2){ animation-delay:.4s !important; } .fx-eda circle:nth-child(3){ animation-delay:.8s !important; }
+@keyframes sweat{ 0%,100%{ opacity:.25 } 50%{ opacity:1 } }
+
+.marker{ pointer-events:none; transition:opacity .35s; }
+.marker .core{ fill:var(--sig); } .marker .mring{ fill:none; stroke:var(--sig); stroke-width:1; opacity:.5; }
+.marker.sys .core{ fill:var(--teal); } .marker.sys .mring{ stroke:var(--teal); }
+svg[data-active] .marker{ opacity:.35; } svg[data-active] .marker.on{ opacity:1; }
+.marker.on .mring{ transform-box:fill-box; transform-origin:center; animation:ping 1.3s ease-out 1; }
+.node.hot.warm .ring{ stroke:var(--warm); stroke-opacity:.7; } .node.hot.toolnode .ring{ stroke:var(--tool); stroke-opacity:.7; }
+.node.hot .ico{ stroke:var(--text); } .node.hot text{ fill:var(--text); }
+.hint{ text-align:center; color:var(--muted); font-size:.85rem; margin:.8rem auto 0; max-width:46ch; }
+.intro{ grid-area:intro; } .tl-wrap{ grid-area:time; min-width:0; } .map{ grid-area:map; } .inspector{ grid-area:insp; }
+.tl-head{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:.4rem 1rem; color:var(--muted); font-size:.82rem; margin:0 0 .5rem; }
+.tl-legend{ display:inline-flex; align-items:center; gap:.4rem; } .tl-legend .dot:last-of-type{ margin-left:.6rem; }
+.tl-scroll{ overflow-x:auto; padding-bottom:.4rem; scrollbar-width:thin; }
+.tl{ display:grid; grid-template-columns:repeat(9, minmax(82px,1fr)); grid-template-rows:auto auto auto; min-width:750px; padding-top:.5rem; }
+.tl-yr{ grid-row:1; position:relative; height:9px; margin:.55rem 8px 0; border:1px solid color-mix(in srgb, var(--figure) 55%, transparent); border-bottom:0; border-radius:3px 3px 0 0; }
+.tl-yr span{ position:absolute; top:0; left:50%; transform:translate(-50%,-55%); padding:0 .5rem; background:var(--bg); color:var(--text); font-size:.78rem; font-weight:600; letter-spacing:.04em; line-height:1; }
+.tl-item{ grid-row:2; position:relative; transition:opacity .3s; }
+.tl-item::before{ content:""; position:absolute; left:0; right:0; top:1.2rem; height:1px; background:var(--line); }
+.tl-item.first::before{ left:50%; } .tl-item.last::before{ right:50%; }
+.tl.edu-focus .tl-item:not(.in-edu){ opacity:.3; }
+.tl-edu{ grid-row:3; margin:.35rem 6px 0; display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:0 .8rem; padding:.35rem .7rem; border-radius:8px; font:inherit; font-size:.76rem; text-align:left; cursor:pointer; color:var(--muted); background:transparent; border:1px solid var(--line); transition:background .3s, border-color .3s; }
+.tl-edu strong{ color:var(--text); font-weight:500; }
+.tl-edu.nit{ border-top:2px solid var(--warm); } .tl-edu.usc{ border-top:2px solid var(--sig); }
+.tl-edu.nit.on, .tl-edu.nit:hover{ background:color-mix(in srgb, var(--warm) 10%, transparent); }
+.tl-edu.usc.on, .tl-edu.usc:hover{ background:color-mix(in srgb, var(--sig) 8%, transparent); }
+.tl-item.now::before{ background:linear-gradient(90deg, var(--line), color-mix(in srgb, var(--sig) 45%, transparent)); }
+.tl-node{ position:relative; display:flex; flex-direction:column; align-items:center; gap:.2rem; width:100%; padding:.85rem .3rem .35rem; background:none; border:0; border-radius:10px; color:var(--muted); font:inherit; text-align:center; cursor:pointer; transition:background .3s, color .3s; }
+.tl-node .dot{ width:9px; height:9px; margin-bottom:.35rem; box-shadow:0 0 0 4px var(--bg); transition:transform .3s, box-shadow .3s; }
+.tl-name{ font-size:.82rem; line-height:1.25; color:var(--text); opacity:.75; transition:opacity .3s; }
+.tl-date{ font-size:.72rem; }
+.tl-node:hover, .tl-node.is-on{ background:color-mix(in srgb, var(--sig) 6%, transparent); }
+.tl-node.is-on .tl-name, .tl-node:hover .tl-name{ opacity:1; }
+.tl-node.is-on .dot{ transform:scale(1.5); box-shadow:0 0 0 4px var(--bg), 0 0 12px currentColor; }
+.tl-node[aria-pressed="true"]{ outline:1px solid color-mix(in srgb, var(--sig) 40%, transparent); }
+.tl-node.beyond .dot{ background:var(--tool); }
+.chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:.45rem; margin:1rem auto 0; padding:0; list-style:none; max-width:640px; }
+.chip{
+  display:inline-flex; align-items:center; gap:.45rem; font:inherit; font-size:.82rem; color:var(--muted);
+  background:transparent; border:1px solid var(--line); border-radius:999px; padding:.35rem .8rem; cursor:pointer; transition:color .25s, border-color .25s;
+}
+.chip:hover, .chip[aria-pressed="true"]{ color:var(--text); border-color:var(--sig); }
+.dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+.k-structure{ background:var(--sig); } .k-system{ background:var(--teal); } .k-population{ background:var(--warm); }
+.k-device{ background:transparent; border:1px dashed var(--warm); } .k-tool{ background:var(--tool); }
+
+/* inspector */
+.inspector{ border-left:1px solid var(--line); padding:0 0 0 clamp(1rem,2vw,2rem); min-height:420px; }
+.inspector .kind{ display:flex; align-items:center; gap:.5rem; color:var(--muted); font-size:.85rem; margin:0 0 .6rem; }
+.inspector h2{ font-family:var(--serif); font-weight:400; font-size:clamp(1.5rem,2vw,1.9rem); line-height:1.15; margin:0 0 .35rem; }
+.inspector .org{ color:var(--muted); font-size:.9rem; margin:0 0 1rem; }
+.links{ display:flex; flex-wrap:wrap; gap:.4rem 1.2rem; margin:0 0 1rem; padding:0; list-style:none; font-size:.9rem; }
+.links a{ color:var(--sig); text-underline-offset:3px; }
+.inspector .sum{ margin:0 0 1.2rem; max-width:40ch; }
+.scope{ display:block; width:100%; height:84px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:0 0 .8rem; }
+.sigs{ display:flex; flex-wrap:wrap; gap:.4rem; margin:0 0 1.4rem; padding:0; list-style:none; }
+.sigs li{ font-size:.8rem; color:var(--sig); border:1px solid color-mix(in srgb, var(--sig) 35%, transparent); border-radius:6px; padding:.1rem .5rem; }
+.btn{ font:inherit; font-size:.92rem; font-weight:500; color:var(--bg); background:var(--sig); border:0; border-radius:8px; padding:.65rem 1.1rem; cursor:pointer; text-decoration:none; display:inline-block; }
+.btn.ghost{ background:transparent; color:var(--text); border:1px solid var(--line); }
+.btn:hover{ filter:brightness(1.08); }
+.legend{ list-style:none; margin:1rem 0 0; padding:0; display:grid; gap:.55rem; font-size:.88rem; color:var(--muted); }
+.legend li{ display:flex; gap:.6rem; align-items:baseline; } .legend .dot{ transform:translateY(-1px); }
+
+@media (max-width: 1100px){
+  .hero{ grid-template-columns:1fr; grid-template-areas:"intro" "time" "map" "insp"; min-height:0; }
+  .intro h1{ max-width:18ch; }
+  .map svg{ max-height:none; max-width:560px; }
+  .inspector{ border-left:0; border-top:1px solid var(--line); padding:1.5rem 0 0; min-height:0; }
+}
+@media (max-width: 600px){
+  .node text{ display:none; }
+  body{ font-size:16px; }
+}
+
+/* sections */
+main section.page{ max-width:1100px; margin:0 auto; padding:clamp(3.5rem,8vw,6rem) clamp(1rem,4vw,3rem); border-top:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+section.page h2{ font-family:var(--serif); font-weight:400; font-size:clamp(1.8rem,3vw,2.4rem); margin:0 0 2rem; letter-spacing:-.01em; }
+.two{ display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:3rem; }
+@media (max-width: 800px){ .two{ grid-template-columns:1fr; gap:2rem; } }
+.prose p{ max-width:62ch; margin:0 0 1rem; }
+.motto{ margin:0 0 1.6rem; padding:0 0 0 1.2rem; border-left:2px solid var(--warm); }
+.motto p{ font-family:var(--serif); font-size:clamp(1.3rem,2.2vw,1.6rem); line-height:1.35; color:var(--text); margin:0; max-width:32ch; }
+.edu dt{ font-weight:600; } .edu dd{ margin:0 0 1rem; color:var(--muted); }
+.timeline{ list-style:none; margin:0; padding:0; }
+.timeline > li{ display:grid; grid-template-columns:11rem minmax(0,1fr); gap:1.5rem; padding:1.4rem 0; border-bottom:1px solid var(--line); }
+.timeline .skl{ margin:.2rem 0 .6rem; }
+.timeline .when small{ color:var(--warm); font-size:.78rem; }
+.timeline .when{ color:var(--muted); font-size:.9rem; padding-top:.15rem; }
+.timeline h3{ margin:0; font-size:1.05rem; font-weight:600; } .timeline .where{ color:var(--muted); margin:.1rem 0 .5rem; font-size:.95rem; }
+.timeline p{ margin:0 0 .5rem; max-width:62ch; }
+@media (max-width: 640px){ .timeline > li{ grid-template-columns:1fr; gap:.3rem; } }
+.linkbtn{ background:none; border:0; padding:0; font:inherit; color:var(--sig); cursor:pointer; text-decoration:underline; text-underline-offset:3px; font-size:.92rem; }
+.projects{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0 2.5rem; }
+.projects li{ padding:1.3rem 0; border-top:1px solid var(--line); }
+.projects .kind{ display:flex; align-items:center; gap:.5rem; font-size:.82rem; color:var(--muted); margin:0 0 .4rem; }
+.projects h3{ font-family:var(--serif); font-weight:400; font-size:1.35rem; line-height:1.2; margin:0 0 .3rem; }
+.projects p{ margin:0 0 .6rem; color:var(--muted); font-size:.95rem; }
+.forth{ list-style:none; margin:0; padding:0; display:grid; gap:1rem; max-width:70ch; } .forth li{ padding-left:1rem; border-left:1px solid var(--line); color:var(--muted); } .forth strong{ color:var(--text); font-weight:500; }
+.pub{ font-family:var(--serif); font-size:1.4rem; line-height:1.3; max-width:36ch; margin:0 0 .6rem; }
+.subhead{ font-family:var(--serif); font-weight:400; font-size:1.3rem; margin:0 0 1.2rem; color:var(--text); }
+.strengths{ list-style:none; margin:0 0 3.5rem; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:0 2.5rem; }
+.strengths li{ padding:1.1rem 0; border-top:1px solid var(--line); }
+.strengths h4{ margin:0 0 .3rem; font-size:1rem; font-weight:600; }
+.strengths p{ margin:0 0 .6rem; color:var(--muted); font-size:.95rem; }
+.pchips{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.pchip{ font:inherit; font-size:.8rem; color:var(--text); background:transparent; border:1px solid var(--line); border-radius:999px; padding:.25rem .7rem; cursor:pointer; display:inline-flex; align-items:center; gap:.4rem; }
+.pchip:hover{ border-color:var(--sig); }
+.projects .featured-label, .group-label{ grid-column:1/-1; color:var(--muted); font-size:.85rem; letter-spacing:.04em; text-transform:uppercase; border:0; padding:1.5rem 0 .4rem; }
+.skills{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:2rem 2.5rem; }
+.skills h3{ font-size:.95rem; font-weight:600; margin:0 0 .5rem; color:var(--text); }
+.skills p{ margin:0; color:var(--muted); font-size:.95rem; }
+.contact dl{ display:grid; grid-template-columns:max-content 1fr; gap:.5rem 2rem; margin:0 0 2rem; }
+.contact dt{ color:var(--muted); }
+footer{ text-align:center; color:var(--muted); font-size:.85rem; padding:2rem 1rem 3rem; }
+
+/* case study */
+dialog.case{
+  width:min(760px,100vw); max-width:100vw; height:100%; max-height:100%; margin:0 0 0 auto; padding:0; border:0; border-left:1px solid var(--line);
+  background:var(--bg-2); color:var(--text);
+}
+dialog.case::backdrop{ background:rgba(2,6,14,.7); }
+dialog.case[open]{ animation:slidein .35s cubic-bezier(.2,.7,.2,1); }
+@keyframes slidein{ from{ transform:translateX(40px); opacity:0 } to{ transform:none; opacity:1 } }
+.case-inner{ padding:calc(env(safe-area-inset-top,0px) + 2rem) clamp(1.2rem,4vw,3rem) calc(env(safe-area-inset-bottom,0px) + 3rem); }
+.case .close{ position:sticky; top:0; float:right; }
+.case h2{ font-family:var(--serif); font-weight:400; font-size:clamp(1.8rem,3.5vw,2.5rem); line-height:1.1; margin:.4rem 0 .4rem; max-width:20ch; }
+.case .meta{ color:var(--muted); margin:0 0 2rem; }
+.case section{ display:grid; grid-template-columns:10rem minmax(0,1fr); gap:1.5rem; padding:1.1rem 0; border-top:1px solid var(--line); }
+.case h3{ font-size:.92rem; font-weight:600; color:var(--muted); margin:.15rem 0 0; }
+.case section p{ margin:0 0 .4rem; max-width:58ch; }
+.case h3.sub{ font-family:var(--serif); font-weight:400; font-size:1.25rem; color:var(--text); margin:1.6rem 0 .8rem; }
+.story{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; counter-reset:s; }
+.story li{ background:var(--bg-2); padding:1rem 1.1rem; counter-increment:s; }
+.story-label{ display:flex; align-items:center; gap:.5rem; font-size:.85rem; font-weight:600; color:var(--sig); margin-bottom:.35rem; }
+.story-label::before{ content:counter(s); display:inline-grid; place-items:center; width:1.35rem; height:1.35rem; border-radius:50%; border:1px solid color-mix(in srgb, var(--sig) 50%, transparent); font-size:.72rem; font-weight:500; }
+.story .s-did{ grid-column:1/-1; }
+.skl li{ color:var(--warm); border-color:color-mix(in srgb, var(--warm) 40%, transparent); }
+.story p{ margin:0 0 .3rem; }
+.gloss{ display:grid; grid-template-columns:max-content 1fr; gap:.5rem 1.2rem; margin:0; }
+.gloss dt{ color:var(--sig); font-weight:500; } .gloss dd{ margin:0; color:var(--muted); }
+.tech{ margin-top:2rem; border-top:1px solid var(--line); }
+.tech summary{ cursor:pointer; padding:1.1rem 0; font-family:var(--serif); font-size:1.25rem; list-style:none; }
+.tech summary::-webkit-details-marker{ display:none; }
+.tech summary::before{ content:"+"; display:inline-block; width:1.4rem; color:var(--sig); }
+.tech[open] summary::before{ content:"–"; }
+.tech summary span{ font-family:var(--sans); font-size:.85rem; color:var(--muted); margin-left:.5rem; }
+@media (max-width: 640px){ .story{ grid-template-columns:1fr; } .gloss{ grid-template-columns:1fr; } .gloss dd{ margin-bottom:.4rem; } }
+.case .note{ border-left:2px solid var(--warm); padding-left:1rem; color:var(--muted); font-size:.92rem; margin:0 0 1.5rem; }
+@media (max-width: 640px){ .case section{ grid-template-columns:1fr; gap:.3rem; } }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+  .fx-eeg{ stroke-dashoffset:0; }
+}
+
+/* ---------- figure style options ---------- */
+.marker .mk{ transform:scale(var(--mk,1.35)); }
+.node .nd{ transform:scale(var(--nd,1.15)); }
+svg[data-figure="dots"] .sil{ stroke-dasharray:.1 5.5; stroke-width:2.2; opacity:.9; }
+svg[data-figure="dots"] .skinfill{ fill:url(#dotfill); }
+svg[data-figure="dots"] .anat{ opacity:.12; }
+svg[data-figure="glass"] .skinfill{ fill:url(#glassfill); }
+svg[data-figure="glass"] .sil{ stroke:url(#rim); stroke-width:1.6; opacity:.9; }
+svg[data-figure="glass"] .anat{ opacity:.14; }
+svg[data-figure="glass"] .halo-soft{ opacity:.07; stroke-width:22; }
+svg[data-figure][data-active] .sil{ opacity:.5; }
+
+.opts-btn{ background:var(--bg-2); font-size:.85rem; padding:.5rem .9rem; }
+.opts-panel{ background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:1rem 1.1rem; width:min(260px, calc(100vw - 2rem)); font-size:.9rem; }
+.opts-panel[hidden]{ display:none; }
+.opts fieldset{ border:0; margin:0 0 .8rem; padding:0; display:grid; gap:.3rem; }
+.opts legend{ color:var(--muted); font-size:.8rem; margin-bottom:.3rem; padding:0; }
+.opts label{ display:flex; gap:.5rem; align-items:center; cursor:pointer; }
+.opts input{ accent-color:var(--sig); }
+.opts-panel p{ margin:0; color:var(--muted); font-size:.78rem; }
+
+nav[aria-label="Primary"]{ display:flex; align-items:center; gap:1.4rem; }
+.opts{ position:relative; order:2; }
+.opts-btn{ background:transparent; font-size:.82rem; padding:.4rem .8rem; color:var(--warm); border-color:color-mix(in srgb, var(--warm) 45%, transparent); }
+.opts-panel{ position:absolute; right:0; top:calc(100% + .5rem); z-index:40; }
+@media (max-width: 900px){ .menu-btn{ order:3; } .opts-btn{ padding:.4rem .7rem; } }
+.scope{ height:clamp(48px, 9vh, 84px); }
+.inspector h2{ font-size:clamp(1.35rem, min(2vw, 3.6vh), 1.9rem); }
+.inspector .sum{ margin-bottom:clamp(.6rem, 2vh, 1.2rem); }
+/* ---------- responsive layout: fits any laptop height ---------- */
+:root{ --hdr:58px; --tlh:140px; }
+.hero{
+  grid-template-rows:auto minmax(0,1fr); grid-template-areas:"intro time time" "intro map insp";
+  height:calc(100svh - var(--hdr)); min-height:600px; max-height:1150px; align-items:stretch;
+  padding-top:clamp(.8rem,2.5vh,2rem); padding-bottom:clamp(.8rem,2.5vh,2rem); row-gap:clamp(.4rem,1.5vh,1.2rem);
+}
+.intro{ align-self:center; }
+.intro h1{ font-size:clamp(1.8rem, min(3.3vw, 5.4vh), 3.3rem); margin-bottom:clamp(.6rem,2vh,1.2rem); }
+.intro p.lede{ margin-bottom:clamp(.8rem,3vh,2rem); font-size:clamp(.92rem, 1.9vh, 1.06rem); }
+.pipeline li{ padding:clamp(.1rem,.5vh,.35rem) 0 clamp(.25rem,1vh,.75rem); }
+.map{ display:flex; flex-direction:column; min-height:0; }
+.map svg{ flex:1 1 0; min-height:0; width:100%; height:100%; max-height:none; max-width:none; }
+.map-caption{ flex:none; }
+.hint{ margin-top:.5rem; }
+.inspector{ align-self:center; min-height:0; max-height:100%; overflow:auto; }
+.cap{ display:none; }
+@media (max-width: 1100px){
+  .hero{ grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); grid-template-areas:"intro intro" "time time" "map insp"; grid-template-rows:auto auto auto; height:auto; min-height:0; max-height:none; }
+  .tl-wrap{ position:sticky; top:var(--hdr); z-index:10; background:color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+    margin:0 calc(-1 * clamp(1rem,4vw,3rem)); padding:.5rem clamp(1rem,4vw,3rem) .2rem; }
+  .map{ scroll-margin-top:calc(var(--hdr) + var(--tlh) + 6px); }
+  .map svg{ flex:none; width:100%; height:auto; aspect-ratio:720/860; max-height:max(300px, calc(100svh - var(--hdr) - var(--tlh) - 4.5rem)); }
+  .inspector{ border-left:1px solid var(--line); border-top:0; padding:0 0 0 1.2rem; align-self:start; max-height:none; overflow:visible; }
+  .intro h1{ font-size:clamp(1.9rem, 5vw, 2.8rem); max-width:20ch; }
+}
+@media (max-width: 699px){
+  .hero{ grid-template-columns:1fr; grid-template-areas:"intro" "time" "map" "insp"; }
+  .map svg{ max-height:max(260px, calc(100svh - var(--hdr) - var(--tlh) - 6.2rem)); }
+  .tl-head span:last-child{ display:none; } .tl-head{ margin-bottom:.2rem; }
+  .tl-date{ font-size:.7rem; }
+  .inspector{ border-left:0; border-top:1px solid var(--line); padding:1.2rem 0 0; }
+  .tl{ grid-template-columns:repeat(9, 104px); min-width:0; }
+  .tl-edu{ font-size:.72rem; }
+  .tl-node{ padding:.9rem .2rem .3rem; } .tl-name{ font-size:.78rem; }
+  .cap{ display:flex; align-items:center; gap:.7rem; margin-top:.5rem; padding:.5rem .5rem .5rem .9rem; border:1px solid var(--line); border-radius:12px; background:var(--bg-2); }
+  .cap[hidden]{ display:none; }
+  .cap-t{ flex:1; display:flex; flex-direction:column; line-height:1.3; font-size:.9rem; } .cap-t span{ color:var(--muted); font-size:.78rem; }
+  .cap .btn{ padding:.5rem .9rem; }
+  .hint.has-sel{ display:none; }
+  .node text{ display:none; } .node.is-on text{ display:block; font-size:19px; }
+}
+
+:root[data-bg="light"] .sil{ opacity:.9; } :root[data-bg="light"] .organ{ opacity:.6; }
+:root[data-bg="light"] svg[data-active] .r-brain, :root[data-bg="light"] svg[data-active] .r-heart{ filter:none; }
+.swatches{ display:grid; gap:.35rem; }
+.swatch{ display:flex; align-items:center; gap:.6rem; width:100%; padding:.4rem .5rem; background:none; border:1px solid transparent; border-radius:8px; color:var(--text); font:inherit; font-size:.88rem; cursor:pointer; text-align:left; }
+.swatch:hover{ border-color:var(--line); }
+.swatch[aria-checked="true"]{ border-color:var(--sig); }
+.swatch i{ flex:none; width:26px; height:26px; border-radius:50%; border:1px solid rgba(128,128,128,.4); position:relative; }
+.swatch i::after{ content:""; position:absolute; inset:9px; border-radius:50%; }
+.swatch small{ display:block; color:var(--muted); font-size:.74rem; }
+
+/* ---------- figure transformations ---------- */
+.fig, #markers{ transition:opacity .6s ease; }
+.alt{ opacity:0; pointer-events:none; transform-box:view-box; transform-origin:400px 450px; transform:scale(.97); transition:opacity .6s ease, transform .6s ease; }
+.alt .ln{ fill:none; stroke:var(--figure); stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; opacity:.9; }
+.alt .ln.faint{ opacity:.35; }
+.alt .body{ fill:url(#skin); }
+.alt .acc{ fill:none; stroke:var(--warm); stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
+.alt .acc .body{ fill:color-mix(in srgb, var(--warm) 10%, transparent); }
+.alt .womb{ fill:none; stroke:var(--warm); stroke-width:1; stroke-dasharray:2 5; opacity:.7; }
+.alt .ecu rect{ fill:color-mix(in srgb, var(--tool) 12%, transparent); stroke:var(--tool); stroke-width:1.1; }
+.alt .ecu path, .alt .bus{ fill:none; stroke:var(--tool); stroke-width:1.1; }
+.alt .bus{ stroke-dasharray:4 5; }
+.alt .beat{ fill:none; stroke:var(--warm); stroke-width:1; opacity:0; transform-box:fill-box; transform-origin:center; }
+svg[data-active="argonne"] #human, svg[data-active="levitt"] #human, svg[data-active="friend"] #human,
+svg[data-active="argonne"] #markers, svg[data-active="levitt"] #markers, svg[data-active="friend"] #markers{ opacity:0; }
+svg[data-active="argonne"] #hits, svg[data-active="levitt"] #hits, svg[data-active="friend"] #hits{ pointer-events:none; }
+svg[data-active="argonne"] #alt-car, svg[data-active="levitt"] #alt-mother, svg[data-active="friend"] #alt-preg{ opacity:1; transform:none; }
+svg[data-active="argonne"] .bus{ animation:flow 1.2s linear 3; }
+svg[data-active="levitt"] #alt-mother .beat, svg[data-active="friend"] #alt-preg .beat{ animation:ping 1.4s ease-out .5s 2 both; }
+
+/* ---------- readable pipeline ---------- */
+.pipe-title{ font-size:.8rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 .7rem; }
+.pipeline{ counter-reset:pp; border-left:0; padding:0; max-width:38ch; }
+.pipeline::before{ content:""; position:absolute; left:.72rem; top:.9rem; bottom:1.4rem; width:1px; background:var(--line); }
+.pipeline li{ counter-increment:pp; padding-left:2.3rem; }
+.pipeline li::before{ content:counter(pp); left:0; top:.25rem; width:1.45rem; height:1.45rem; display:grid; place-items:center; border:1px solid var(--figure); background:var(--bg); color:var(--text); font-size:.72rem; font-weight:600; }
+.pipeline .step{ font-size:1rem; font-weight:600; color:var(--text); }
+.pipeline .detail{ font-size:.9rem; line-height:1.4; color:var(--muted); }
+.pipeline.is-active .detail{ color:var(--sig); }
+.pipeline.is-active li::before{ border-color:var(--sig); }
+.pipe-wrap .pulse{ left:calc(.72rem - 3px); }
+.intro h1{ font-size:clamp(1.7rem, min(3.1vw, 4.6vh), 3.1rem); max-width:15ch; }
+.intro p.lede{ font-size:clamp(.9rem, 1.8vh, 1.04rem); margin-bottom:clamp(.6rem,2.4vh,1.6rem); }
+.pipeline li{ padding-top:clamp(.1rem,.4vh,.3rem); padding-bottom:clamp(.2rem,.9vh,.6rem); }
+.pipeline .step{ font-size:clamp(.92rem,1.9vh,1rem); }
+/* ---------- highlights ---------- */
+.hl{ color:var(--text); background:linear-gradient(transparent 60%, color-mix(in srgb, var(--warm) 32%, transparent) 0); padding:0 .08em; border-radius:2px; }
+.hl.s{ background:linear-gradient(transparent 60%, color-mix(in srgb, var(--sig) 26%, transparent) 0); }
+section.page h2::before{ content:attr(data-n); display:block; font-family:var(--sans); font-size:.78rem; letter-spacing:.12em; color:var(--warm); margin-bottom:.4rem; }
+.stat{ font-family:var(--serif); font-size:1.5rem; color:var(--text); }
+/* ---------- right now: juggling ---------- */
+.juggle{ margin:2rem 0 0; padding:1.1rem 1.2rem 1rem; border:1px solid var(--line); border-radius:14px; background:color-mix(in srgb, var(--bg-2) 70%, transparent); }
+.juggle figcaption{ color:var(--muted); font-size:.9rem; margin-top:.4rem; }
+.juggle figcaption strong{ color:var(--text); font-weight:600; display:block; font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; margin-bottom:.2rem; }
+.juggle svg{ display:block; width:100%; max-width:300px; height:auto; margin:0 auto; cursor:pointer; }
+.juggle .brain-glow path{ fill:var(--sig); }
+.juggle .who .brain{ stroke:var(--sig); }
+.juggle #arms-flex circle{ fill:var(--figure); }
+.juggle .sparks{ fill:none; stroke:var(--warm); stroke-width:1.6; stroke-linecap:round; }
+.juggle .who{ fill:none; stroke:var(--figure); stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; }
+.juggle .orbit{ fill:none; stroke:var(--line); stroke-dasharray:2 5; }
+.juggle .ball text{ font:600 10.5px var(--sans); text-anchor:middle; fill:var(--text); transition:opacity .4s; }
+.juggle.moving .ball text{ opacity:0; }
+.juggle .again{ background:none; border:0; padding:0; font:inherit; font-size:.8rem; color:var(--sig); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+
+.node{ transition:opacity .5s ease; }
+svg[data-active="argonne"] #alt-car{ transform:translate(0,-20px) scale(1.25); }
+svg.focus-mode .node:not(.is-on){ opacity:0; pointer-events:none; }
+.inspector .role{ display:flex; flex-wrap:wrap; align-items:baseline; gap:.15rem .6rem; margin:.2rem 0 .3rem; }
+.inspector .role strong{ font-size:.82rem; font-weight:600; color:var(--bg); background:var(--warm); border-radius:999px; padding:.12rem .6rem; }
+.inspector .role span{ color:var(--text); font-size:.95rem; }
+.inspector .org{ font-size:.85rem; }
+
+/* ---------- compact skills ---------- */
+.strengths{ grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0 2rem; }
+.strengths h4{ font-family:var(--serif); font-weight:400; font-size:1.6rem; line-height:1.1; margin:0 0 .25rem; }
+.strengths p{ font-size:.92rem; margin:0 0 .7rem; }
+.strengths .seen{ display:block; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:.35rem; }
+.toolkit{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:1.6rem 2.5rem; }
+.toolkit h4{ font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 0 .55rem; }
+.toolkit ul{ list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:.35rem; }
+.toolkit li{ font-size:.85rem; padding:.18rem .6rem; border:1px solid var(--line); border-radius:6px; background:var(--bg-2); }
+.looking{ font-size:1.1rem; max-width:52ch; margin:0 0 1.8rem; }
+.pipeline:has(li:nth-child(5)) li{ padding-top:0; padding-bottom:clamp(.1rem,.5vh,.4rem); }
+.cfig{ margin:0 0 1.2rem; } .cfig img{ display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:10px; background:#fff; } .cfig figcaption{ font-size:.9rem; color:var(--muted); margin-top:.45rem; }
+.mentor{ font-size:.92rem; color:var(--muted); border-left:2px solid var(--warm); padding-left:.8rem; }
+
+/* ---------- affiliations ---------- */
+.affil{ max-width:1100px; margin:0 auto; padding:2.6rem clamp(1rem,4vw,3rem) 2.2rem; border-top:1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.affil h2{ font-size:.85rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 0 1.1rem; font-family:var(--sans); }
+.affil-list{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:.7rem; }
+.affil-tile{ width:100%; display:flex; align-items:center; gap:.85rem; padding:.75rem .9rem; background:var(--bg-2); border:1px solid var(--line); border-radius:12px; font:inherit; color:var(--text); text-align:left; cursor:pointer; transition:border-color .25s, transform .25s; }
+.affil-tile:hover{ border-color:var(--sig); transform:translateY(-1px); }
+.mono{ flex:none; width:3rem; height:3rem; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:.88rem; letter-spacing:.02em; color:#fff; }
+.mono.sig{ background:var(--sig); } .mono.warm{ background:var(--warm); } .mono.tool{ background:var(--tool); }
+.affil-t{ display:flex; flex-direction:column; line-height:1.3; } .affil-t strong{ font-size:1rem; font-weight:600; } .affil-t span{ font-size:.88rem; color:var(--muted); }
+/* ---------- readable type: scales with the screen, never tiny ---------- */
+body{ font-size:clamp(16px, 12.5px + .35vw, 18.5px); }
+nav a{ font-size:clamp(.95rem, .85rem + .2vw, 1.05rem); }
+.tl-head{ font-size:.88rem; } .tl-yr span{ font-size:.86rem; }
+.tl-name{ font-size:.88rem; font-weight:500; } .tl-date{ font-size:.78rem; } .tl-edu{ font-size:.82rem; }
+.node text{ font:600 15px var(--sans); }
+.node text.ta-end{ text-anchor:end; } .node text.ta-start{ text-anchor:start; }
+.hint{ font-size:.92rem; }
+.pipe-title{ font-size:.85rem; font-weight:600; }
+.pipeline .step{ font-weight:700; } .pipeline .detail{ font-size:.95rem; }
+.inspector .kind{ font-size:.9rem; } .inspector .org{ font-size:.92rem; } .inspector .role strong{ font-size:.88rem; }
+.sigs li{ font-size:.86rem; } .links{ font-size:.95rem; }
+.projects .kind{ font-size:.88rem; } .projects p{ font-size:1rem; } .projects h3{ font-weight:500; }
+.strengths p{ font-size:1rem; } .strengths .seen{ font-size:.78rem; } .pchip{ font-size:.88rem; }
+.toolkit h4{ font-size:.86rem; } .toolkit li{ font-size:.92rem; }
+.timeline .when{ font-size:.95rem; } .timeline h3{ font-size:1.12rem; } .timeline .when small{ font-size:.85rem; }
+.story-label{ font-size:.92rem; } .case .meta{ font-size:1rem; } .case h3{ font-size:.95rem; }
+.legend{ font-size:.94rem; } .q{ font-size:.88rem; } footer{ font-size:.92rem; }
+.juggle figcaption{ font-size:.98rem; } .juggle figcaption b{ color:var(--text); }
+.hl{ font-weight:600; }
+.lede strong{ color:var(--text); font-weight:600; }
+.prose strong{ color:var(--text); }
+@media (max-width: 699px){ .tl-name{ font-size:.86rem; } .tl-date{ font-size:.76rem; } .affil-list{ grid-template-columns:1fr; } }
+@media (min-width: 1101px) and (max-height: 900px){ .inspector .scope, .inspector .links{ display:none; } .inspector h2{ font-size:clamp(1.3rem, 3.2vh, 1.7rem); } }
+@media (min-width: 1101px) and (max-height: 800px){ .inspector .sigs{ display:none; } .inspector .sum{ font-size:.98rem; } }
+@media (min-width: 1101px){ #i-open{ position:sticky; bottom:0; box-shadow:0 -10px 14px var(--bg); } }
+
+/* ---------- logos ---------- */
+.affil-list{ grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); }
+.affil-tile{ flex-direction:column; align-items:flex-start; gap:.6rem; padding:.9rem 1rem; height:100%; }
+.logo-box{ display:flex; align-items:center; justify-content:flex-start; height:48px; width:100%; }
+.logo-box img{ max-height:48px; max-width:100%; width:auto; object-fit:contain; border-radius:4px; }
+.inspector .role .ilogo{ height:28px; width:auto; max-width:120px; object-fit:contain; margin-right:.2rem; border-radius:3px; }
+.c-logo .clogo{ height:40px; width:auto; max-width:180px; object-fit:contain; display:block; margin:.2rem 0 .7rem; border-radius:4px; }
+.timeline .xlogo{ height:30px; width:auto; max-width:130px; object-fit:contain; display:block; margin-bottom:.45rem; border-radius:3px; }
+.edu .elogo{ height:30px; width:auto; max-width:110px; object-fit:contain; display:block; margin-bottom:.35rem; border-radius:3px; }
+/* ---------- steps doodle ---------- */
+.steps-fig .ground{ stroke:var(--line); stroke-width:1.2; }
+.steps-fig .stepblk rect{ stroke:none; }
+.steps-fig .s1{ fill:color-mix(in srgb, var(--warm) 22%, transparent); } .steps-fig .s2{ fill:color-mix(in srgb, var(--tool) 22%, transparent); } .steps-fig .s3{ fill:color-mix(in srgb, var(--sig) 22%, transparent); }
+.steps-fig .steplbl text{ font:600 11px var(--sans); text-anchor:middle; fill:var(--text); }
+.steps-fig .who{ fill:none; stroke:var(--text); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.steps-fig .star path{ fill:var(--warm); }
+.steps-fig .star{ transition:opacity .5s; }
+
+.affil-tile{ cursor:default; }
+.affil-tile:hover{ transform:none; border-color:var(--line); }
+.affil-labs{ display:flex; flex-direction:column; gap:.35rem; width:100%; margin-top:auto; }
+.lab-chip{ display:flex; align-items:center; gap:.45rem; width:100%; padding:.4rem .6rem; font:inherit; font-size:.9rem; font-weight:500; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:8px; cursor:pointer; text-align:left; transition:border-color .2s, background .2s; }
+.lab-chip:hover, .lab-chip:focus-visible{ border-color:var(--sig); background:color-mix(in srgb, var(--sig) 8%, var(--bg)); }
+.lab-chip .arrow{ margin-left:auto; color:var(--muted); }
+.juggle .who{ stroke:var(--text); stroke-width:1.6; }
+.juggle .ball text{ font-size:11.5px; }
+
+.timeline > li{ grid-template-columns:13rem minmax(0,1fr); align-items:start; }
+.timeline .when{ display:flex; flex-direction:column; gap:.3rem; }
+.timeline .xlogo{ height:60px; max-width:190px; width:auto; object-fit:contain; object-position:left center; margin:0 0 .35rem; display:block; }
+.timeline .when .d{ color:var(--text); font-weight:500; }
+@media (max-width: 640px){ .timeline > li{ grid-template-columns:1fr; } .timeline .xlogo{ height:48px; } }
+.affil-list{ grid-template-columns:repeat(auto-fill,minmax(235px,1fr)); }
+
+.ihead{ display:flex; align-items:center; gap:.8rem; margin-bottom:.55rem; }
+.ihead .kind{ margin:0; }
+.inspector .ilogo{ height:46px; width:auto; max-width:170px; object-fit:contain; object-position:left center; display:block; border-radius:4px; }
+@media (min-width: 1101px) and (max-height: 800px){ .inspector .ilogo{ height:38px; } }
+.lab-chip .arrow{ font-size:.78rem; }
+</style>
+</head>
+<body>
+<a href="#main" class="sr-only">Skip to content</a>
+<header class="top">
+  <a class="brand" href="#top">Preeti Ramesh</a>
+  <nav aria-label="Primary">
+    <button class="menu-btn" aria-expanded="false" aria-controls="navlist">Menu</button>
+    <ul id="navlist">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#projects">Research and projects</a></li>
+      <li><a href="#publication">Publication</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#resume">Résumé</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+<section class="hero" id="top" aria-label="Introduction and interactive body map">
+  <div class="intro">
+    <h1>I turn physiological signals into intelligent medical technology.</h1>
+    <p class="lede">I’m <strong>Preeti Ramesh</strong>. I study electrical and computer engineering at USC with a focus on machine learning. I take <span class="hl">messy physiological and clinical data</span> and learn the problem behind it. Then I turn it into <span class="hl s">something people can use</span>.</p>
+    <div class="pipe-wrap"><span class="pulse" aria-hidden="true"></span>
+    <p class="pipe-title" id="pipe-title">How my work flows</p>
+    <ol class="pipeline" id="pipeline" aria-labelledby="pipe-title">
+      <li><span class="step">Physiological signals</span><span class="detail">What the body gives off</span></li>
+      <li><span class="step">Signal processing</span><span class="detail">Cleaning out the noise</span></li>
+      <li><span class="step">Machine learning</span><span class="detail">Finding patterns that hold up on new people</span></li>
+      <li><span class="step">Clinically meaningful tools</span><span class="detail">Something clinicians and researchers can use</span></li>
+    </ol></div>
+  </div>
+
+  <nav class="tl-wrap" aria-label="Career timeline">
+    <p class="tl-head"><span>My path, oldest to newest</span><span>Hover a step to see it on the body, or a degree to see what I did during it</span></p>
+    <div class="tl-scroll"><div class="tl" id="tl" role="list"></div></div>
+  </nav>
+  <div class="map">
+    <svg id="body" viewBox="40 0 720 860" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="mapdesc">
+      <desc id="mapdesc">A line drawing of a human figure surrounded by research settings. Each highlighted area corresponds to a project; use the region buttons below the figure to explore with a keyboard or touch.</desc>
+      <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <path id="half" d="M188,120 C188,134 187,144 185,152 C175,160 152,162 136,168 C120,174 110,186 108,204 C106,222 104,240 104,258 C103,286 100,312 99,334 C97,360 92,392 88,420 C87,430 86,438 86,446 C83,456 79,468 79,482 C79,494 81,504 84,512 C86,518 92,519 94,513 C96,505 97,494 98,484 C100,476 104,470 104,462 C104,456 101,452 100,446 C102,420 108,388 112,358 C116,330 120,300 124,272 C126,256 128,242 130,232 C134,252 136,276 138,300 C140,322 140,340 137,356 C133,376 130,396 132,416 C133,430 136,442 140,452 C140,500 142,550 148,600 C150,616 148,630 146,650 C144,690 150,740 156,786 C158,800 152,812 146,820 C142,826 146,834 156,834 L184,834 C190,834 192,828 190,820 C188,806 186,796 186,786 C188,740 190,690 190,652 C190,630 188,616 190,600 C193,560 197,510 200,470"/>
+        <path id="headhalf" d="M200,32 C178,32 164,48 163,72 C162,92 168,108 178,116 C184,121 192,124 200,124"/>
+        <path id="ear" d="M164,70 C158,70 157,84 163,88"/>
+        <path id="detail" d="M188,160 C174,165 154,167 138,171 M154,470 C158,520 163,560 168,598 M170,606 m-6,0 a6,8 0 1,0 12,0 a6,8 0 1,0 -12,0 M148,232 C160,240 178,242 194,236"/>
+        <pattern id="dotfill" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r=".9" fill="#5CDDEB" fill-opacity=".3"/></pattern>
+        <linearGradient id="glassfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5CDDEB" stop-opacity=".18"/><stop offset=".55" stop-color="#2F6E8F" stop-opacity=".1"/><stop offset="1" stop-color="#0A1628" stop-opacity=".06"/></linearGradient>
+        <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9BEAF3"/><stop offset="1" stop-color="#3D5B80"/></linearGradient>
+        <radialGradient id="skin" cx="50%" cy="38%" r="60%"><stop offset="0" style="stop-color:var(--sig)" stop-opacity=".09"/><stop offset="1" style="stop-color:var(--sig)" stop-opacity=".015"/></radialGradient>
+        <path id="lung" d="M191,184 C176,181 160,193 154,215 C148,241 148,273 152,301 C164,307 180,305 191,297 C194,263 194,221 191,184 Z"/>
+        <path id="quad" d="M150,470 C156,520 162,560 168,598 M186,470 C183,520 178,560 172,600"/>
+      </defs>
+
+      <g aria-hidden="true">
+        <!-- context links -->
+        <g id="links"></g>
+
+        <g id="human" class="fig" transform="translate(200 0)">
+          <!-- soft aura -->
+          <use href="#half" class="halo-soft"/><use href="#half" class="halo-soft" transform="translate(400 0) scale(-1 1)"/>
+          <use href="#half" class="skinfill"/><use href="#half" class="skinfill" transform="translate(400 0) scale(-1 1)"/>
+          <use href="#headhalf" class="skinfill"/><use href="#headhalf" class="skinfill" transform="translate(400 0) scale(-1 1)"/>
+          <!-- hospital wearable layer -->
+          <g class="r-halo">
+            <use href="#half" transform="translate(200 450) scale(1.06) translate(-200 -450)"/>
+            <use href="#half" transform="translate(200 450) scale(1.06) translate(-200 -450) translate(400 0) scale(-1 1)"/>
+            <ellipse cx="200" cy="78" rx="41" ry="50"/>
+          </g>
+          <!-- silhouette -->
+          <use href="#half" class="sil"/><use href="#half" class="sil" transform="translate(400 0) scale(-1 1)"/>
+          <use href="#headhalf" class="sil"/><use href="#headhalf" class="sil" transform="translate(400 0) scale(-1 1)"/>
+          <use href="#ear" class="sil"/><use href="#ear" class="sil" transform="translate(400 0) scale(-1 1)"/>
+          <use href="#detail" class="anat"/><use href="#detail" class="anat" transform="translate(400 0) scale(-1 1)"/>
+          <path class="anat" d="M200,168 V292 M200,380 m-1.6,0 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0"/>
+
+          <!-- brain -->
+          <g class="organ r-brain">
+            <path d="M172,74 C170,52 186,38 200,38 C216,38 230,50 229,72 C229,88 216,98 200,98 C184,98 173,88 172,74 Z"/>
+            <path d="M200,40 C197,56 203,74 199,96"/>
+            <path d="M180,58 C186,62 186,70 180,74 M220,58 C214,62 214,70 220,74 M184,86 C190,82 194,86 192,92 M216,86 C210,82 206,86 208,92"/>
+          </g>
+          <path class="fx fx-eeg" d="M152,24 l6,-4 l5,7 l4,-9 l6,6 l5,-3 l4,8 l6,-12 l3,10 l6,-4 l5,3 l6,-6 l4,5 l6,-2 l5,4 l6,-7 l4,6 l6,-3 l5,2"/>
+
+          <!-- lungs -->
+          <g class="r-lungs-g">
+            <use href="#lung" class="organ r-lungs"/><use href="#lung" class="organ r-lungs" transform="translate(400 0) scale(-1 1)"/>
+            <path class="organ r-lungs" d="M200,150 V182 M200,182 C194,186 192,190 191,194 M200,182 C206,186 208,190 209,194"/>
+          </g>
+
+          <!-- heart -->
+          <path class="organ r-heart" d="M206,236 C214,230 228,236 228,250 C228,264 216,272 208,278 C202,268 196,258 198,246 C199,240 202,237 206,236 Z"/>
+          <circle class="fx fx-pulse" cx="213" cy="254" r="12"/>
+
+          <!-- autonomic pathway -->
+          <path class="r-ans" d="M200,116 C198,160 196,200 207,248 M197,200 C170,210 134,204 122,240 C112,300 100,380 92,440 C90,470 89,495 89,512"/>
+
+          <!-- spine and legs -->
+          <g id="verts"></g>
+          <path class="organ r-spine" d="M200,124 V440"/>
+          <use href="#quad" class="organ r-legs"/><use href="#quad" class="organ r-legs" transform="translate(400 0) scale(-1 1)"/>
+          <path class="fx fx-stim" d="M200,290 V345 C200,385 180,420 174,470 C168,540 168,600 170,670 M200,345 C200,385 220,420 226,470 C232,540 232,600 230,670"/>
+
+          <!-- hand -->
+          <path class="organ r-hand" d="M80,500 C82,512 88,520 94,513"/>
+          <g class="fx fx-eda"><circle cx="82" cy="508" r="2"/><circle cx="89" cy="517" r="2"/><circle cx="96" cy="509" r="2"/></g>
+        </g>
+
+        <!-- alternate figures: the figure becomes the subject of non-body projects -->
+        <g id="alt-car" class="alt">
+          <path class="ln faint" d="M140,566 H660"/>
+          <path class="ln body" d="M232,530 L200,530 Q190,530 190,520 L190,482 Q190,466 208,462 L272,452 L332,400 Q346,388 366,388 L468,388 Q490,388 504,402 L556,452 L594,460 Q612,464 612,484 L612,520 Q612,530 602,530 L572,530 A42,42 0 0 0 488,530 L314,530 A42,42 0 0 0 230,530"/>
+          <path class="ln" d="M344,446 L376,404 L436,404 L436,446 Z M450,404 L494,404 Q500,404 504,410 L534,446 L450,446 Z M443,446 V520 M594,478 H608 M192,476 H204"/>
+          <circle class="ln" cx="272" cy="530" r="32"/><circle class="ln" cx="272" cy="530" r="10"/>
+          <circle class="ln" cx="530" cy="530" r="32"/><circle class="ln" cx="530" cy="530" r="10"/>
+          <path class="bus" d="M262,500 H560"/>
+          <g class="ecu"><rect x="249" y="476" width="26" height="16" rx="3"/><rect x="387" y="476" width="26" height="16" rx="3"/><rect x="525" y="476" width="26" height="16" rx="3"/>
+            <path d="M262,492 V500 M400,492 V500 M538,492 V500"/></g>
+        </g>
+        <g id="alt-mother" class="alt">
+          <path class="ln body" d="M330,170 C342,158 370,154 388,148 L388,132 M412,132 L412,148 C430,154 458,158 470,170 C482,200 484,250 478,300 C474,318 458,322 440,320 M462,214 C454,260 444,300 436,336 C460,460 484,620 500,770 Q500,780 488,780 L312,780 Q300,780 300,770 C316,620 340,460 364,336 C356,300 346,260 338,214 M330,170 C318,200 316,250 322,300 C326,316 344,318 362,312"/>
+          <ellipse class="ln body" cx="400" cy="92" rx="34" ry="42"/>
+          <path class="ln" d="M366,98 C360,62 380,44 402,44 C426,44 442,62 436,98 M366,98 C364,114 368,126 376,132 M436,98 C438,114 434,126 426,132 M376,62 C390,58 404,52 414,46"/>
+          <path class="ln" d="M350,780 L348,812 L372,812 L372,780 M428,780 L428,812 L452,812 L452,780"/>
+          <g class="acc">
+            <path class="body" d="M358,300 C352,282 366,266 388,264 L452,262 C470,262 478,276 472,290 C466,304 448,310 430,310 L380,312 C368,312 362,308 358,300 Z"/>
+            <circle class="body" cx="350" cy="282" r="17"/>
+            <path d="M398,266 C404,284 404,298 398,310 M424,264 C430,282 430,296 424,310"/>
+          </g>
+          <path class="ln" d="M362,312 L440,294 M440,320 L372,318"/>
+          <circle class="beat" cx="372" cy="292" r="8"/>
+        </g>
+        <g id="alt-preg" class="alt">
+          <circle class="ln body" cx="404" cy="92" r="38"/>
+          <path class="ln" d="M370,98 C364,60 388,46 412,50 C432,54 444,70 442,92 M370,98 C366,122 374,140 384,150 C388,160 382,176 376,186"/>
+          <path class="ln body" d="M386,128 C378,170 370,200 372,240 C376,300 370,340 368,380 C362,420 364,450 372,470 C382,500 384,540 382,600 C380,660 384,720 386,780 L384,808 L440,808 Q450,808 444,798 L420,792 C422,720 428,660 428,600 C430,540 432,500 430,472 C470,456 498,420 500,370 C502,310 476,262 446,250 C438,236 440,210 434,196 C432,176 424,160 420,128"/>
+          <path class="ln" d="M392,170 C404,220 410,262 428,300 C434,312 446,314 452,304"/>
+          <ellipse class="womb" cx="458" cy="368" rx="38" ry="46"/>
+          <g class="acc fetus">
+            <circle class="body" cx="468" cy="342" r="15"/>
+            <path class="body" d="M456,352 C434,362 432,394 448,404 C464,414 486,404 488,384 C490,370 482,358 472,356"/>
+            <path d="M456,392 C464,388 470,392 472,398 M466,370 C474,372 478,378 476,384"/>
+          </g>
+          <circle class="beat" cx="462" cy="374" r="6"/>
+        </g>
+        <g id="markers"></g>
+        <!-- setting nodes -->
+        <g id="nodes"></g>
+      </g>
+
+      <!-- hit areas (mouse/pen only; keyboard and touch use the region buttons) -->
+      <g id="hits" transform="translate(200 0)">
+        <g class="hot" data-id="lungs"><ellipse cx="172" cy="244" rx="26" ry="62"/><ellipse cx="228" cy="244" rx="26" ry="62"/></g>
+        <g class="hot" data-id="emg"><rect x="186" y="300" width="28" height="150"/><ellipse cx="160" cy="540" rx="26" ry="72"/><ellipse cx="240" cy="540" rx="26" ry="72"/></g>
+        <g class="hot" data-id="stress"><circle cx="213" cy="254" r="18"/></g>
+        <g class="hot" data-id="eda"><circle cx="90" cy="490" r="28"/></g>
+        <g class="hot" data-id="eeg"><ellipse cx="200" cy="74" rx="42" ry="50"/></g>
+      </g>
+    </svg>
+    <div class="map-caption">
+      <p class="hint" id="hint">Each bright point is a project. Hover or tap the body or the timeline; they light up together.</p>
+      <div class="cap" id="cap" hidden><span class="dot" id="cap-dot"></span><span class="cap-t"><strong id="cap-t"></strong><span id="cap-s"></span></span><button class="btn" id="cap-open">Open</button></div>
+    </div>
+  </div>
+
+  <aside class="inspector" id="inspector" aria-label="Project preview">
+    <div id="i-default">
+      <p class="kind">Nine projects, one thread</p>
+      <h2>Point at a bright dot to explore</h2>
+      <p class="sum">Each marker says what it really is. Body parts, body systems, study groups and devices stay separate.</p>
+      <ul class="legend" id="legend"></ul>
+    </div>
+    <div id="i-project" hidden>
+      <div class="ihead"><span id="i-logo"></span><p class="kind"><span class="dot" id="i-dot"></span><span id="i-kind"></span></p></div>
+      <h2 id="i-title"></h2>
+      <p class="role" id="i-role"></p>
+      <p class="org" id="i-org"></p>
+      <p class="sum" id="i-sum"></p>
+      <canvas class="scope" id="scope" aria-hidden="true"></canvas>
+      <ul class="sigs" id="i-sigs" aria-label="Signals and data"></ul>
+      <ul class="links" id="i-links" aria-label="Related links"></ul>
+      <button class="btn" id="i-open">Open case study</button>
+    </div>
+  </aside>
+</section>
+
+<section class="affil" aria-labelledby="affil-h">
+  <h2 id="affil-h">Where I’ve learned and built</h2>
+  <ul class="affil-list" id="affil"></ul>
+</section>
+
+<section class="page" id="about">
+  <h2 data-n="01">About</h2>
+  <div class="two">
+    <div class="prose">
+      <blockquote class="motto"><p>I show up for the work even when I don’t know the script yet. I learn the problem. I look for a way forward. And I keep moving.</p></blockquote>
+      <p>My path started with <span class="hl">electronics at NIT Tiruchirappalli</span>. Research then took me across India, Singapore and the United States. Now I study <span class="hl s">machine learning at USC</span>. Most stops added a new part of the body and a new kind of data.</p>
+      <p>I have learned that the hardest part is rarely the model. <strong>It is understanding what people need.</strong> Some build sensors. Some read EEG all day. Some lead clinical studies.</p>
+      <p>Impact keeps me here. I want healthcare technology to be more useful and more reliable. I also want it within reach of more people.</p>
+    </div>
+    <div class="about-side">
+    <dl class="edu">
+      <dt><img class="elogo" src="logos/usc.png" alt="University of Southern California logo">University of Southern California</dt>
+      <dd>M.S. Electrical and Computer Engineering, Machine Learning and Data Science. 2025–2027. <span class="hl s">GPA 3.92</span></dd>
+      <dt><img class="elogo" src="logos/astar.png" alt="A*STAR logo">Honours</dt>
+      <dd><span class="hl">Singapore International Pre-Graduate Award (SIPGA)</span>, A*STAR, 2024. The award that brought me to Singapore.</dd>
+      <dt><img class="elogo" src="logos/nitt.png" alt="NIT Tiruchirappalli logo">National Institute of Technology, Tiruchirappalli</dt>
+      <dd>B.Tech. Electronics and Communication Engineering. 2021–2025. CGPA 3.51</dd>
+    </dl>
+    <figure class="juggle" id="juggle">
+      <svg viewBox="0 0 280 210" role="img" aria-labelledby="jug-t"><title id="jug-t">A small figure juggling three commitments: the BD co-op, master’s classes and research.</title>
+        <ellipse class="orbit" cx="140" cy="84" rx="78" ry="52"/>
+        <g class="who"><circle cx="140" cy="150" r="11"/><path d="M140,161 V196 M140,170 L118,150 L106,128 M140,170 L162,150 L174,128 M140,196 L128,208 M140,196 L152,208"/></g>
+        <g id="balls"></g>
+      </svg>
+      <figcaption><strong>Right now</strong>A medtech co-op at BD. Master’s classes at USC. Research at USC and Children’s Hospital Los Angeles. <b>I keep all three in the air.</b> <button class="again" id="jug-again">Watch again</button></figcaption>
+    </figure>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="experience">
+  <h2 data-n="02">Experience</h2>
+  <ol class="timeline" id="timeline"></ol>
+</section>
+
+<section class="page" id="projects">
+  <h2 data-n="03">Research and projects</h2>
+  <ul class="projects" id="projectlist"></ul>
+</section>
+
+<section class="page" id="publication">
+  <h2 data-n="04">Publication</h2>
+  <p class="pub">Advancing Emotion Detection through Dual-Channel EEG and Peripheral Physiological Signal Integration</p>
+  <p style="color:var(--muted);margin:0 0 .8rem">Sharan Roy, Shreya Manish Band, Preeti Ramesh, Punitkumar Bhavsar, Ar Jac Fredo, Deepesh Kumar. pp. 105–109, Dubai. 2024 International Conference on Modeling, Simulation and Intelligent Computing (MoSICom), IEEE.</p>
+  <a href="https://ieeexplore.ieee.org/abstract/document/10881605" target="_blank" rel="noopener">Read on IEEE Xplore</a> <span style="color:var(--muted)">DOI 10.1109/MoSICom63082.2024.10881605</span>
+  <h3 style="font-family:var(--serif);font-weight:400;font-size:1.3rem;margin:2.6rem 0 1rem">Forthcoming</h3>
+  <ul class="forth">
+    <li><strong>Wearable stress detection (Khan Lab).</strong> Conference paper in preparation.</li>
+    <li><strong>Early-life adversity (CHLA Levitt Lab).</strong> Manuscripts in preparation.</li>
+  </ul>
+</section>
+
+<section class="page" id="skills">
+  <h2 data-n="05">Skills</h2>
+  <h3 class="subhead">How I work</h3>
+  <ul class="strengths" id="strengths"></ul>
+  <h3 class="subhead">Technical toolkit</h3>
+  <div class="toolkit">
+    <div><h4>Signals</h4><ul><li>EEG</li><li>sEEG</li><li>MEG</li><li>EMG</li><li>ECG</li><li>PPG</li><li>HRV</li><li>EDA</li><li>RSA</li><li>Respiratory audio</li></ul></div>
+    <div><h4>Signal processing</h4><ul><li>MNE-Python</li><li>Brainstorm</li><li>NeuroKit2</li><li>SciPy</li><li>HeartPy</li><li>Filtering</li><li>Wavelets</li></ul></div>
+    <div><h4>Machine learning</h4><ul><li>PyTorch</li><li>TensorFlow/Keras</li><li>scikit-learn</li><li>Feature selection</li><li>Transformers</li><li>LOSO and nested CV</li><li>Multimodal models</li></ul></div>
+    <div><h4>Data</h4><ul><li>Python</li><li>MATLAB</li><li>NumPy</li><li>Pandas</li><li>Matplotlib</li><li>statsmodels</li><li>FDR control</li><li>Bootstrap and permutation tests</li><li>Mixed-effects models</li><li>REDCap</li></ul></div>
+    <div><h4>Embedded</h4><ul><li>ESP32</li><li>CAN bus</li><li>Virtual ECU</li><li>Data acquisition</li><li>Protocol testing</li></ul></div>
+    <div><h4>Tools</h4><ul><li>Git</li><li>VS Code</li><li>Firebase</li><li>Jupyter</li><li>ipywidgets</li><li>Plotly</li><li>pytest</li><li>SLURM / HPC</li></ul></div>
+  </div>
+</section>
+
+<section class="page" id="resume">
+  <h2 data-n="06">Résumé</h2>
+  <p class="prose" style="margin:0 0 1.2rem">A one-page PDF with the same information, for applicant systems.</p>
+  <a class="btn" id="cv-btn" href="Preeti_Ramesh_Resume.pdf" download>Download résumé (PDF)</a> <span id="cv-msg" style="color:var(--muted);font-size:.85rem;margin-left:.6rem" role="status"></span>
+</section>
+
+<section class="page contact" id="contact">
+  <h2 data-n="07">Contact</h2>
+  <p class="looking"><span class="hl s">What I’m looking for:</span> roles in machine learning for biomedical and clinical data where careful validation matters. I graduate in May 2027.</p>
+  <dl>
+    <dt>Email</dt><dd><a href="mailto:preetiatoz@gmail.com">preetiatoz@gmail.com</a></dd>
+    <dt>LinkedIn</dt><dd><a href="https://www.linkedin.com/in/preeti-ramesh" target="_blank" rel="noopener">linkedin.com/in/preeti-ramesh</a></dd>
+    <dt>GitHub</dt><dd><a href="https://github.com/preeti-ramesh?tab=repositories" target="_blank" rel="noopener">github.com/preeti-ramesh</a></dd>
+    <dt>Based in</dt><dd>Los Angeles, California</dd>
+  </dl>
+</section>
+</main>
+<footer>Prototype. Placeholders in dashed outline need your input.</footer>
+
+<dialog class="case" id="case" aria-labelledby="c-title">
+  <div class="case-inner">
+    <button class="btn ghost close" id="c-close">Close</button>
+    <p class="kind" style="display:flex;gap:.5rem;align-items:center;color:var(--muted);font-size:.85rem;margin:0"><span class="dot" id="c-dot"></span><span id="c-kind"></span></p>
+    <h2 id="c-title"></h2>
+    <div class="c-logo" id="c-logo"></div>
+    <p class="meta" id="c-meta"></p>
+    <ul class="links" id="c-links" aria-label="Related links"></ul>
+    <p class="note" id="c-note" hidden></p>
+    <div id="c-body"></div>
+  </div>
+</dialog>
+
+<script>
+const Q = q => ({ q });
+const KINDS = {
+  structure:{ label:"Anatomical structure", desc:"A part of the body a signal comes from" },
+  system:{ label:"Physiological system", desc:"A network across organs, read through several signals" },
+  population:{ label:"Clinical population", desc:"A study group, not a body region" },
+  device:{ label:"Medical-device system", desc:"Technology worn on or around the body" },
+  tool:{ label:"Engineering tool", desc:"Software and systems that support the work" }
+};
+const NODES = {
+  lab:{ x:118, y:150, label:"Research lab", icon:"M-4,-10 V-3 L-10,8 Q-11,11 -7,11 H7 Q11,11 10,8 L4,-3 V-10 M-6,-10 H6 M-6,4 H6" },
+  hospital:{ x:682, y:150, label:"Hospital", icon:"M-10,-10 H10 V10 H-10 Z M0,-5 V5 M-5,0 H5", warm:true },
+  wearable:{ x:700, y:470, label:"Wearable sensing", icon:"M-6,-10 H6 Q8,-10 8,-8 V8 Q8,10 6,10 H-6 Q-8,10 -8,8 V-8 Q-8,-10 -6,-10 Z M-4,-14 V-10 M4,-14 V-10 M-4,10 V14 M4,10 V14 M-5,1 L-2,1 L0,-4 L2,5 L3,1 L5,1" },
+  rehab:{ x:100, y:520, label:"Rehabilitation", icon:"M-6,-12 L0,0 L-3,12 M0,0 m-2.5,0 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0 M6,-6 Q10,0 6,6" }
+};
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md0 = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<span class="hl">$1</span>');
+const LOGO = { usc:"logos/usc.png", bd:"logos/bd.png", chla:"logos/chla.png", argonne:"logos/argonne.png", astar:"logos/astar.png", iit:"logos/iit.png", nitt:"logos/nitt.png" };
+const ORG = { eeg:"usc", stress:"usc", levitt:"chla", friend:"chla", bd:"bd", argonne:"argonne", emg:"astar", eda:"iit", lungs:"nitt" };
+const ORGNAME = { usc:"University of Southern California", bd:"BD", chla:"Children’s Hospital Los Angeles", argonne:"Argonne National Laboratory", astar:"A*STAR", iit:"IIT (BHU)", nitt:"NIT Tiruchirappalli" };
+const logoImg = (id, cls) => `<img class="${cls}" src="${LOGO[ORG[id]]}" alt="${ORGNAME[ORG[id]]} logo" loading="lazy">`;
+const linkList = p => (p.links || []).map(l => `<li><a href="${l.url}" target="_blank" rel="noopener">${l.label}<span class="sr-only"> (opens in a new tab)</span></a></li>`).join("");
+const P = [
+ { id:"eeg", kind:"structure", region:"Brain", anchor:[400,58], settings:["lab","hospital"], signal:"eeg",
+   title:"AI for automatic epileptic spike detection in EEG", org:"USC Brain Image Group (BIG Lab)", role:"Graduate Researcher", dates:"Jan 2026 – present",
+   sum:"I develop and **validate deep-learning spike detectors** on brain recordings they were never trained on. The goal is an open-source neuroimaging toolbox.",
+   links:[{label:"BIG Lab website",url:"https://neuroimage.usc.edu/"}], sigs:["sEEG"], pipe:["Hours to days of clinical EEG","Channel mapping, montage harmonization","Comparing published spike detectors","Groundwork for a lab module"],
+   cs:{ problem:["Marking epileptic spikes in EEG by hand takes clinicians hours. AI models can help, but only if they hold up on new real-world recordings. The lab’s toolbox (Brainstorm, in MATLAB) also differs from where most models are built (Python)."],
+     why:["A detector that fails quietly on new data is worse than none. Careful validation is what makes these models usable in a shared research toolbox."],
+     contribution:["Design and run validation studies for deep-learning EEG models on data from outside their training setting.", "Build preprocessing pipelines in Python and MATLAB. They cover signal processing, channel and montage handling, resampling and quality checks.", "Adapt a pretrained transformer foundation model to spike detection.", "Maintain a versioned and tested codebase other researchers can re-run. Present progress regularly to faculty advisors."],
+     data:["Stereo-EEG (sEEG), recorded from electrodes placed inside the brain, with expert annotations. The recordings come from settings outside the models’ training data."],
+     approach:["Evaluation protocols are written before experiments run. The test can’t drift toward the results.", "Results are analysed with bootstrap confidence intervals and permutation tests."],
+     tools:["Python, MATLAB, PyTorch, transformers, Brainstorm, Git"],
+     results:["Findings will be shared once published."],
+     impact:["Validated models are meant for an open-source neuroimaging toolbox. They should cut the hours clinicians spend marking spikes."],
+     learned:[Q("What you learned.")] } },
+ { id:"emg", own:"Independent project within the RESTORES team, during my SIPGA award internship.", kind:"structure", region:"Spinal cord and muscles", anchor:[400,345], settings:["rehab"], signal:"emg",
+   title:"EMG preprocessing for epidural spinal stimulation", org:"A*STAR, Healthcare and Medtech Division (Singapore)", role:"Data Science Intern", dates:"May – Aug 2024",
+   sum:"I cleaned hip-muscle signals and compared **stimulation frequency and current** for spinal-cord injury rehabilitation.",
+   links:[{label:"Project presentation",url:"https://docs.google.com/presentation/d/1sNyZo1rhZbSL2rMZ4j9hjfODQkHVFI2m/edit?usp=drive_link"},{label:"A*STAR Medtech",url:"https://www.a-star.edu.sg/industries/medtech"}], sigs:["EMG"], pipe:["EMG during spinal stimulation","Filtering, wavelets, artifact handling","MATLAB parameter analysis","Support for rehabilitation protocols"],
+   cs:{ problem:["In the RESTORES project (RESToration Of Rehabilitative function with Epidural spinal Stimulation), patients with chronic spinal-cord injury receive epidural spinal stimulation. The EMG recorded around it needs careful noise and artifact handling before motor responses can be compared."],
+     why:["Understanding how stimulation parameters affect movement supports the optimization of rehabilitation treatment."],
+     contribution:["Evaluated filtering, wavelet decomposition, noise-reduction and artifact-handling techniques; worked toward a standardized preprocessing method for the supplied datasets; developed MATLAB algorithms relating stimulation frequency and current to patient movement; presented the findings."],
+     data:["EMG from the psoas and gluteus muscles (hip flexion and extension, left and right) of a patient with chronic spinal-cord injury, recorded over 11 days of sessions.", "Stimulation settings: 20, 40 and 60 Hz at 3, 5 and 10 mA."],
+     approach:["Noise removal: a feed-forward comb filter for powerline noise at regular 20 Hz intervals, a notch filter for a 150 Hz spike, and threshold detection to null involuntary muscle-twitch (fasciculation) spikes.","Baseline: a 5-second sliding window picked the most stable segment (lowest variance), excluding the first 15 and last 5 seconds.","Activity: RMS normalised to baseline, with each muscle normalised separately (z-score and min-max, averaged) because psoas and gluteus have different ranges."],
+     tools:["MATLAB"], results:["In this data, 20 Hz gave the highest activity at 3 mA but dropped as current rose; 60 Hz gave the lowest overall.","**5 mA at 40 Hz** stood out as the most consistent, low-variance setting, so it was prioritised over higher but less stable responses.","Suggested next steps: a larger cohort, more stimulation parameters, and long-term effects on muscle recovery."],
+     impact:["Supported the optimization of rehabilitation-treatment protocols. Presented to A*STAR in July 2024."], learned:[Q("What you learned.")] } },
+ { id:"eda", own:"Independent project.", kind:"structure", region:"Skin and fingertips", anchor:[290,490], settings:["lab","wearable"], signal:"eda",
+   title:"Emotion recognition from electrodermal activity", org:"IIT (BHU), School of Biomedical Engineering", role:"Research Intern", dates:"May – Jul 2023",
+   sum:"Classical and deep-learning models that read emotion from skin signals.",
+   links:[{label:"Publication (IEEE)",url:"https://ieeexplore.ieee.org/abstract/document/10881605"},{label:"School of Biomedical Engineering",url:"https://iitbhu.ac.in/dept/bme"}], sigs:["EDA"], pipe:["EDA time series","Stationary wavelet transform","1D CNN and SWT-CNN models","Valence and arousal classes"],
+   cs:{ problem:["Emotional state is difficult to measure objectively. EDA tracks sympathetic arousal through sweat-gland activity, but relating it to emotion is noisy."],
+     why:["Reliable physiological emotion recognition is a building block for affective computing and mental-health monitoring."],
+     contribution:["Developed and evaluated classical machine-learning and deep-learning models, including 1D CNN and stationary-wavelet-transform CNN variants; built the valence/arousal classification system; ran model testing and evaluation."],
+     data:["Pre-processed EDA physiological time series.", Q("Dataset name and EDA recording site, from the publication.")],
+     approach:["Wavelet-based representations feeding 1D convolutional networks, compared with classical models."],
+     tools:["PyTorch, Keras"], results:[Q("Shareable accuracy figures.")], impact:[Q("How the work was used afterward.")], learned:[Q("What you learned.")] } },
+ { id:"stress", note:"Ongoing research. Extension to multiple stress paradigms is in progress, and further details will be shared after publication.", kind:"system", region:"Autonomic nervous system", anchor:[413,254], settings:["lab","wearable"], signal:"ppg",
+   title:"Affordable wearable sensing and stress detection", org:"USC Khan Lab", role:"Volunteer Researcher", dates:"Dec 2025 – present",
+   sum:"An end-to-end stress detection pipeline for **noisy and affordable wearable sensors**. It reached **82.2% accuracy** on the first benchmark.",
+   links:[{label:"Khan Lab website",url:"https://khan.usc.edu/"}], sigs:["EDA","PPG","HRV"], pipe:["EDA and PPG from wearables","Preprocessing, HRV, feature extraction","SFS + multimodal classifiers, LOSO","82.2% accuracy, Cold Pressor Test"],
+   cs:{ problem:["The lab develops affordable wearable electronics. Signals from low-cost, newly fabricated sensors are noisy, and most stress detectors are tuned to one person or one stressor and fail to generalize."],
+     why:["A pipeline that holds up across people and stress paradigms is closer to something a wearable can use in the real world."],
+     contribution:["Built and maintained the end-to-end pipeline: signal preprocessing, feature engineering, model benchmarking and HPC-based experimentation.", "Traced a subtle signal-detection bug in a key biometric feature to an incorrect input signal and a missing amplitude threshold, and fixed it, improving feature validity across the dataset.", "Built a command-line tool and a GUI so collaborators can run experiment iterations without touching notebooks.", "Worked between the fabrication and algorithm sides of the lab to understand how hardware noise shows up in the data."],
+     data:["EDA and PPG from 12 participants; HRV derived from PPG.", "12 is a smaller group than comparable studies (around 15), so this is an early benchmark rather than a final result."],
+     approach:["Benchmarked classical models (SVM, random forest, logistic regression and others) across several feature-engineering strategies.", "Nested cross-validation and leave-one-subject-out testing to avoid data leakage; sequential feature selection for interpretable features.", "Large training runs on the university HPC cluster (SLURM), with reproducible environments across local and remote systems."],
+     tools:["Python, NumPy, SciPy, NeuroKit2, HeartPy, scikit-learn, SLURM, Git"],
+     results:["82.2% accuracy and 80.6% balanced accuracy on the initial Cold Pressor Test benchmark."],
+     impact:["A reproducible pipeline ready for more stress paradigms, with sensitive human-subjects data kept out of version control and experiment configurations documented."],
+     learned:[Q("What you learned.")] } },
+ { id:"lungs", own:"Independent contribution to the stethoscope project.", kind:"structure", region:"Lungs", anchor:[372,236], settings:["lab"], signal:"resp",
+   title:"Low-cost electronic stethoscope", org:"NIT Tiruchirappalli, Instrumentation and Control Engineering", role:"Research Intern", dates:"Dec 2022 – Jan 2023",
+   sum:"Signal processing that helps a low-cost stethoscope record clean breathing sounds.",
+   links:[{label:"Department website",url:"https://nitt.edu/academics/departments/ice"}], sigs:["Respiratory audio"], pipe:["Respiratory sounds","Acquisition and DSP","Sound analysis","An affordable auscultation tool"],
+   cs:{ problem:["Digital auscultation tools are often too expensive for low-resource settings."],
+     why:["An affordable stethoscope that captures clean respiratory sound widens access to screening."],
+     contribution:["Contributed to the device’s development and built DSP pipelines for respiratory-sound acquisition and analysis."],
+     data:["Respiratory audio."], approach:[Q("Which filtering or analysis methods did the pipeline use?")],
+     tools:[Q("Hardware and software used.")], results:[Q("Any shareable outcome.")], impact:[Q("Where the device went next.")], learned:[Q("What you learned.")] } },
+ { id:"levitt", own:"Sole developer of the pipeline, under the supervision of the Levitt Lab team.", kind:"population", region:"Mother and infant cohort", anchor:[600,300], node:{ x:600, y:300, label:"Mother and infant cohort", icon:"M-4,-9 m-3.6,0 a3.6,3.6 0 1,0 7.2,0 a3.6,3.6 0 1,0 -7.2,0 M-12,12 C-12,1 -8,-3 -4,-3 C0,-3 3,-1 4,2 M-9,7 C-4,11 4,11 10,5 M6,1 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0 M3,6 C0,7.5 -3,7.5 -5,6.5" }, settings:["hospital"], signal:"hrv",
+   title:"Interactive analysis pipeline for a longitudinal pediatric cohort", org:"Children’s Hospital Los Angeles, Levitt Lab", role:"Clinical Research Scholar", dates:"Jun – Aug 2026",
+   sum:"A **five-stage analysis system** that needs no code. It takes the Family First study from raw exports to advanced models.",
+   note:"This is a study population, not a body region, so the figure becomes a mother holding her infant. Study data, results and variable-level details are confidential and not shown.",
+   links:[{label:"Levitt Lab website",url:"https://www.chla.org/research/lab/levitt"}], sigs:["HRV","RSA","F2-isoprostanes","ACEs, PEARLS","Bayley-IV"], pipe:["Longitudinal REDCap data","Automated cohort extraction","Hypothesis-driven statistics","Interactive trajectory GUI"],
+   cs:{ problem:["The team had many candidate variables measured across several study visits. They needed to explore relationships among them, and decide which deserved deeper analysis, without writing code."],
+     why:["With hundreds of possible variable combinations per analysis, false positives are a real risk, and new visits and variables keep arriving."],
+     contribution:["Sole developer: architecture, statistical design, GUI, verification and documentation.", "1 · Standardize: raw exports into one clean dataset, with auditable missing-data handling and automatic detection of new visits.", "2 · Explore: interactive heatmaps for screening many variable combinations at once.", "3 · Rank and confirm: a fixed rule decides which pathways advance to mixed-effects modelling.", "4 · Phenotype: signal trajectories classified three complementary ways, with an agreement summary.", "5 · Mechanism: mediation and moderation screening with bootstrap inference."],
+     data:["The Family First study, a longitudinal mother–infant cohort: questionnaires (ACEs, PEARLS), autonomic measures (HRV, RSA), oxidative-stress biomarkers and Bayley-IV outcomes across visits.", "Participant data kept out of version control, with notebook outputs stripped automatically on commit."],
+     approach:["**Principled prioritization**: a three-tier rule (adjusted p-value, then standardized effect size, then a confidence-interval criterion), kept in one shared function so every notebook applies it identically.", "Benjamini–Hochberg false-discovery-rate correction, shown as the primary number in every table.", "Bootstrap resampling at the participant level, respecting the repeated-measures design. Screening results are labelled exploratory: flags for follow-up, never conclusions.", "A stratified check for non-linear moderation, based on published methods work showing linear interaction tests can miss it.", "Plain-language labels, visible sample sizes, a statistics glossary and an interpretation guide."],
+     tools:["Python, pandas, NumPy, statsmodels, SciPy, scikit-learn, matplotlib, ipywidgets, Jupyter, Git"],
+     results:["**A problem I caught in my own tool**: the heatmap corrected p-values within each cell, but its “best result” highlight compared cells across the whole grid with no further correction. I moved to whole-grid correction. In a stress test on a roughly 1,000-cell grid, cells flagged significant fell from 132 to 33, and I updated the documentation to match.", "Research findings are confidential and will be shared through the lab’s publications."],
+     impact:["A working, documented system the team extends as new visits arrive, handed over with a methods write-up, a non-technical user manual, a developer guide and a decision log.", "Supports the lab’s upcoming manuscripts."],
+     learned:[Q("What you learned.")] } },
+ { id:"bd", kind:"device", region:"Wearable monitoring", anchor:[612,610], node:{ x:612, y:610, label:"Wearable monitoring", icon:"M0,0 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0 M-5,0 L-2,0 L0,-5 L2,5 L3,0 L5,0" }, settings:["hospital","wearable"], signal:"ppg",
+   title:"Applied ML for wearable monitoring", org:"Becton Dickinson (BD)", role:"Applied Machine Learning Co-op Intern", dates:"Aug 2026 – present",
+    sum:"Applied machine learning on **PPG for wearable health monitoring** at BD. The company is known for hemodynamic monitoring.",
+    note:"Shared at a general level only. Shown as a layer around the whole body because the work is about monitoring rather than one body site.",
+    links:[{label:"BD",url:"https://www.bd.com/"}], sigs:["PPG","Wearables"], pipe:[],
+   cs:{ problem:["Wearable health monitoring depends on getting reliable information from PPG, the light-based pulse signal."], why:["Monitoring that patients can wear comfortably could make physiological measurement more continuous and accessible."], contribution:["Applying machine learning to PPG signals for wearable health monitoring. Further detail is kept private at BD."],
+     data:["PPG signals."], approach:["Kept private."], tools:["Python"], results:["Kept private."],
+     impact:["Learning how machine learning fits into a medtech product setting."], learned:[Q("What you learned.")] } },
+ { id:"friend", note:"Study details, variables and findings are confidential and not shown here.", own:"Designed and built the toolkit.", kind:"tool", region:"Research tooling", anchor:[682,790], node:{ x:682, y:790, label:"Research computing", icon:"M-9,-9 H9 V9 H-9 Z M-9,-3 H9 M-9,3 H9 M-3,-9 V9 M3,-9 V9" }, settings:["lab"], signal:"grid",
+   title:"A guard-railed analysis toolkit for prenatal research", org:"Children’s Hospital Los Angeles, F.R.I.E.N.D. Lab", role:"Research Data Analyst", dates:"Oct 2026 – present",
+   sum:"I turned hand-edited notebooks into a tool clinicians can use **without creating false results**.",
+   links:[{label:"F.R.I.E.N.D. Lab website",url:"https://www.chla.org/research/lab/fostering-resilience-early-neurodevelopment-friend"}], sigs:["Gestational age","Fetal brain measures"], pipe:["Participant folders","Established and shortlisted features","Local heat-map generation","Faster participant review"],
+   cs:{ problem:["The lab’s analysis lived in static notebooks edited by hand for every new question, with undocumented missing-data codes leaking into calculations, uncorrected p-values across dozens of tests, overlapping variables making models unstable, and no record of why variables were chosen."],
+     why:["Clinicians exploring links between maternal factors and fetal brain measurements need a tool that cannot mislead them."],
+     contribution:["**Correlation explorer**: corrections are computed once, up front; the interface only filters, so clicking can never change the statistics.", "**Variable-selection screen**: flags redundant variables, shows each candidate’s adjusted association with confidence intervals, and saves chosen sets with a full record of how they were chosen.", "**Participant explorer**: flags unusual measurements first, then tests whether a saved set of factors explains them.", "**Safeguards**: refuses to fit near-duplicate predictors and says why in plain words; exploratory results are clearly labelled."],
+     data:["Prenatal data organised by gestational age (GA), merged from two clinical sources with validated one-to-one matching and consistency checks.", "Missing-data codes handled without ever modifying the raw data; ordinal-coding errors in the original analysis corrected."],
+     approach:["Standard methods (Spearman correlation with FDR control, robust regression, residual-based outlier detection), arranged so non-statisticians can’t misuse them.", "A shared, tested Python module and an ipywidgets/Plotly interface with a single-render state design; scientific settings live in configuration."],
+     tools:["Python, pandas, SciPy, statsmodels, ipywidgets, Plotly, matplotlib, seaborn, pytest, nbclient"],
+     results:["About 300 automated checks (pytest plus headless notebook runs) confirm every interactive view matches an independent calculation. File hashes prove the original data and notebooks are unchanged."],
+     impact:["Hand-edited analyses became a reusable tool researchers run themselves, with every result traceable from data cleaning to final model, built to re-run unchanged as enrolment grows."],
+     learned:[Q("What you learned.")] } },
+ { id:"argonne", figs:[{src:"img/argonne-gui.jpg",alt:"The virtual ECU GUI, with panels for incoming requests, vehicle responses, matching mode and the virtual ECU editors.",cap:"The GUI I built: requests from the diagnostic tool, responses from the car, and the editors that drive the virtual ECU."},{src:"img/argonne-flow.jpg",alt:"Flowchart for sorting single-frame, multi-frame and negative responses before logging to CSV.",cap:"How the matching algorithm sorts each reply before it is logged and replayed."}], mentor:"Mentored by Dr. Michael Pamminger. Supported in part by the U.S. Department of Energy’s Office of Workforce Development for Teachers and Scientists through the Seasonal Internship Program.", own:"Independent project.", kind:"tool", region:"Vehicle networks", anchor:[118,790], node:{ x:118, y:790, label:"Vehicle networks", icon:"M-12,3 V-1 Q-12,-2 -10,-2 H-7.5 L-4.5,-7 H4 L7.5,-2 H10 Q12,-2 12,0 V3 H8.5 M3.5,3 H-3.5 M-8.5,3 H-12 M-6,-2 H8 M0,-7 V-2 M-8.5,3 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0 M3.5,3 a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0" }, settings:[], signal:"bits",
+   title:"Virtual ECU for connected vehicles", org:"Argonne National Laboratory, Transportation and Power Systems (Lemont, Illinois)", role:"Machine Learning Intern", dates:"Jan – Apr 2025",
+   sum:"A virtual car computer that **records and replays diagnostic messages**. Engineers can test their tools without the vehicle.",
+   note:"Not a body project, so the figure becomes a car. It shows the same signal-to-system discipline applied to vehicle networks.",
+   links:[{label:"Poster",url:"https://drive.google.com/file/d/1T8T3N7aQh5uGSte7Af3wt8MbvjN_WYq2/view?usp=drive_link"},{label:"Argonne TAPS",url:"https://www.anl.gov/taps"}], sigs:["CAN bus","ESP32"], pipe:["CAN diagnostic messages","Capture and emulation","Deterministic replay","Offline algorithm validation"],
+   cs:{ problem:["Argonne studies real-world driving data to improve energy efficiency and inform cleaner vehicle design. Finding and decoding the right parameters on a vehicle’s Controller Area Network (CAN) is slow and labour-intensive."],
+     why:["Emulating a vehicle’s Electronic Control Unit (ECU) lets engineers decode CAN data and test diagnostic tools without a car on hand."],
+     contribution:["**Request catcher**: captures a commercial diagnostic tool’s (Autel) requests instantly.", "**Vehicle response logger**: records the car’s real replies through the OBD2 port and a microcontroller.", "**Matching algorithm**: links requests to responses for reuse. It handles single-frame, multi-frame and negative responses and logs them to CSV. Auto and manual matching modes are built in.", "**Virtual ECU mode**: replays the matched responses so the tool behaves as if a car were connected.", "A GUI for inspecting messages, editing responses byte by byte and replaying them.", "A local setup and a remote setup linked through Firebase in the cloud. I investigated latency with an ESP32 setup and presented the work as a poster."],
+     data:["CAN diagnostic requests and responses between the diagnostic tool and a car’s ECUs."],
+     approach:["The key problem was timing. The tool sends requests without waiting, and the car’s replies arrive late. Out-of-sync replies made the tool load wrong values. Smarter matching and response scheduling fixed this."],
+     tools:["Python, Firebase, ESP32, OBD2 and CAN, Autel diagnostic tool"],
+     results:["Emulated ECU responses made the diagnostic tool load its full parameter set.", "Request-response matching was accurate, and parameters displayed consistently across sessions.", "The tool showed the expected modules and live data from virtual inputs alone."],
+     impact:["Faster CAN decoding and testing without a vehicle. Next steps on the poster: parameter decoding for reverse engineering, real-time CAN editing to simulate faults, and smarter scheduling for high-frequency requests."],
+     learned:[Q("What you learned.")] } }
+];
+const byId = Object.fromEntries(P.map(p => [p.id, p]));
+/* Plain-language layer: written for someone with no engineering background */
+const PLAIN = {
+  lungs:{ short:"Digital stethoscope", sector:"Medtech device", when:"Dec 2022 – Jan 2023", year:"2022", one:"Helping build an affordable digital stethoscope that records breathing clearly.",
+    story:{ problem:["Listening to the lungs is one of medicine’s oldest checks. A digital stethoscope can record it. It also has to be affordable."],
+      hard:["Breathing sounds are quiet. Noise from the device and the room buries them easily."],
+      did:["I built signal processing that captures breathing sounds reliably and prepares them for analysis."],
+      skills:["Signal processing", "Audio acquisition", "Hardware and software"],
+      helps:["Clinics that need low-cost listening tools."] } },
+  eda:{ short:"Emotion from skin", sector:"Biomedical research", when:"May – Jul 2023", year:"2023", one:"Teaching computers to recognise emotions from tiny changes in skin sweat.",
+    story:{ problem:["Feelings are hard to measure. Our skin sweats slightly when we are excited or stressed. Sensors can pick that up."],
+      hard:["The signal is small and noisy. The same reading can mean different things in different people."],
+      did:["I compared classical machine learning with deep learning, including wavelet-based models. They sort feelings by how pleasant and how intense they are."],
+      skills:["Deep learning", "Comparing methods", "Model evaluation"],
+      helps:["Researchers building technology that responds to how people feel."],
+      next:["Part of the work behind my IEEE conference paper."] } },
+  emg:{ short:"Spinal stimulation and muscles", sector:"Medtech · rehabilitation", when:"May – Aug 2024", year:"2024", one:"Cleaning hip-muscle signals to find the most consistent spinal-stimulation setting.",
+    story:{ problem:["Spinal-cord stimulation is being studied to help people with spinal-cord injury move again. Muscle recordings show whether it works."],
+      hard:["The recordings had powerline noise and electrical spikes. They also had involuntary muscle twitches. The two hip muscles had very different signal ranges."],
+      did:["I removed the noise with targeted filters. I chose the steadiest stretch of each recording as a baseline. Then I measured muscle activity against it so all 9 settings could be compared fairly."],
+      result:["In this data **5 mA at 40 Hz** was the most consistent setting."],
+      skills:["Noisy signals", "Comparing methods", "MATLAB"],
+      helps:["Rehabilitation teams choosing stimulation settings for patients."],
+      next:["Testing with more patients and more settings."] } },
+  argonne:{ short:"Virtual car computer", sector:"Automotive systems", beyond:true, when:"Jan – Apr 2025", year:"2025", one:"A software stand-in for a car’s computer. Vehicle tools can be tested without the real car.",
+    story:{ problem:["Engineers at Argonne study real driving data to make vehicles cleaner. Finding the right signals inside a car’s network is slow manual work."],
+      hard:["Diagnostic tools fire requests fast and replies arrive late. Out-of-sync replies made the tool show wrong values."],
+      did:["I built a virtual control unit with a GUI. It catches the tool’s requests and logs the car’s replies. A matching algorithm pairs them so the car can be replayed later. A local and a remote setup share data through Firebase in the cloud."],
+      result:["The virtual unit made a commercial diagnostic tool load **every parameter and show live data with no car connected**."],
+      skills:["Embedded systems", "Cloud integration", "Building tools", "Debugging"],
+      helps:["Engineers who need to test vehicle tools safely and repeatably."],
+      next:["Presented as a poster at Argonne in April 2025."] } },
+  stress:{ short:"Wearable stress detection", sector:"Wearables", when:"Dec 2025 – now", year:"", one:"Stress detection that copes with noisy wearables and works on people it has never seen.",
+    story:{ problem:["The lab builds affordable wearable sensors. They need software that can tell when someone is stressed."],
+      hard:["Low-cost sensors give noisy signals. Most stress detectors only work on the people they were trained on."],
+      did:["I built the whole pipeline from raw signals to tested models. I ran large experiments on the university supercomputer. I **found and fixed a hidden bug** that was distorting a key heart measurement. I also built a simple tool so teammates can run experiments themselves."],
+      result:["In an ice-water stress test it identified stress **about 82% of the time** across 12 participants. That is a small group. It is an early benchmark."],
+      skills:["Debugging", "Model benchmarking", "HPC", "Tooling for teammates"],
+      helps:["Future affordable wearables that track stress in everyday life."],
+      next:["Next is testing more kinds of stress. A conference paper is in preparation."] } },
+  eeg:{ short:"Epilepsy spike detection", sector:"Neurotechnology", when:"Jan 2026 – now", year:"2026", one:"Testing whether AI that spots epilepsy spikes still works on brain recordings it has never seen.",
+    story:{ problem:["Doctors spend hours marking brief epilepsy spikes by hand. AI could help. A model that works in one hospital can still fail in another."],
+      hard:["The recordings come from electrodes placed inside the brain (sEEG). They last hours or days and arrive in different formats. The lab works in MATLAB while most models are built in Python."],
+      did:["**I write the test plan before running any experiment.** I build pipelines that make recordings comparable. I adapt a pretrained transformer model to the task. My statistics show how certain each result is."],
+      skills:["Validation design", "Transformers", "Statistics", "Reproducible code"],
+      helps:["Neurologists and epilepsy researchers who use an open-source toolbox."],
+      next:["Bringing validated models into the toolbox."] } },
+  levitt:{ short:"Mother and infant study", sector:"Clinical research", when:"Jun – Aug 2026", year:"", one:"A no-code analysis system that helps a research team explore a long study without fooling themselves.",
+    story:{ problem:["The Family First study follows mothers and babies over time. The team had many measurements across many visits. They needed to explore them without writing code."],
+      hard:["Hundreds of comparisons means some will look important purely by chance. New visits keep arriving. The users are biology experts and not programmers."],
+      did:["I built a five-stage system on my own. It runs from raw exports to advanced models. A fixed rule decides which leads deserve follow-up. **I also caught a flaw in my own tool** that made results look stronger than they were. Then I fixed it."],
+      skills:["System design", "Statistical judgement", "Self-review", "Documentation"],
+      helps:["Clinicians and research assistants exploring the study themselves."],
+      next:["The team extends it as new visits arrive. Findings will appear in the lab’s 2027 manuscripts."] } },
+  friend:{ short:"Prenatal research toolkit", sector:"Research tools", when:"Oct 2026 – now", year:"", one:"A tool that lets clinicians explore prenatal research data safely and without code.",
+    story:{ problem:["The lab studies how a mother’s health relates to her baby’s brain before birth. Every new question meant hand-editing analysis notebooks."],
+      hard:["Hidden missing-data codes and dozens of uncorrected tests could produce false results. Overlapping variables made models unstable. Nobody recorded why variables were chosen."],
+      did:["I built a tool with **guardrails and not just charts**. The statistics are fixed before anyone clicks. It refuses to fit meaningless models and says why. Every choice is recorded. About 300 automated checks confirm what the screen shows."],
+      skills:["Guardrail design", "Software testing", "Data engineering", "Plain-language design"],
+      helps:["Clinical researchers exploring the data themselves."],
+      next:["It re-runs unchanged as more families enrol."] } },
+  bd:{ short:"Wearable monitoring at BD", sector:"Medtech industry", when:"Aug 2026 – now", year:"", one:"A part-time co-op applying machine learning to PPG for wearable health monitoring.",
+    story:{ problem:["BD is known for hemodynamic monitoring. Wearables could make that kind of monitoring continuous."],
+      hard:["Medtech work must meet product and engineering needs as well as research ones."],
+      did:["I apply machine learning to PPG. That is the light-based pulse signal used in wearables."],
+      skills:["PPG", "Wearables", "Medtech context"],
+      helps:["Patients and clinical teams who rely on monitoring."],
+      next:["I am learning how analysis connects with product and engineering."] } }
+};
+Object.entries(PLAIN).forEach(([k,v]) => Object.assign(byId[k], { plain:v }));
+/* Each project's own workflow, shown in the "How this project flows" panel */
+const FLOW = {
+  lungs:[["Hardware","A low-cost electronic stethoscope"],["Sound acquisition","Capturing breathing sounds reliably"],["Signal processing","DSP pipelines to clean the audio"],["Analysis","Respiratory-sound analysis"]],
+  eda:[["Pre-processed EDA data","Skin signals that were already cleaned"],["Signal representation","Wavelet transforms of the time series"],["Model comparison","1D CNN and SWT-CNN against classical models"],["Emotion classes","Valence and arousal"]],
+  emg:[["Raw EMG","Psoas and gluteus during stimulation"],["Noise removal","Comb and notch filters, twitch-spike nulling"],["Muscle activity","RMS against a stable baseline"],["Parameter comparison","20–60 Hz × 3–10 mA: 5 mA at 40 Hz most consistent"]],
+  argonne:[["Vehicle hardware", "OBD2 port and a microcontroller"], ["Capture", "Catch tool requests and log car replies"], ["Match and sync", "Pair replies, local to remote via Firebase"], ["Virtual ECU", "Replay the car without the car"]],
+  stress:[["Labeled dataset", "EDA and PPG from 12 participants"], ["Signal processing", "Cleaning, HRV, and a fixed detection bug"], ["Benchmarking", "Classical models, nested and LOSO validation"], ["Result", "82.2% accuracy on the Cold Pressor Test"]],
+  eeg:[["Real-world EEG", "Recordings outside the models’ training data"], ["Preprocessing", "Montages, resampling, quality checks"], ["Model adaptation", "A pretrained transformer for spike detection"], ["Pre-planned validation", "Bootstrap intervals, permutation tests"]],
+  levitt:[["Standardize","One clean dataset from raw exports"],["Explore","Interactive heatmaps"],["Rank and confirm","A fixed rule for what advances"],["Phenotype","Trajectories, checked three ways"],["Mechanism","Mediation and moderation"]],
+  friend:[["Prenatal data", "Two clinical sources, merged and validated"], ["Fixed statistics", "Corrections computed once, before any click"], ["Guarded exploration", "Variable selection with a paper trail"], ["Verified tool", "About 300 automated checks"]],
+  bd:[["PPG signals","Light-based pulse sensing"],["Applied machine learning","Models for wearable monitoring"],["Medtech context","Connecting analysis to product needs"]]
+};
+const FLOW_DEFAULT = [["Physiological signals","What the body gives off"],["Signal processing","Cleaning out the noise"],["Machine learning","Finding patterns that hold up on new people"],["Clinically meaningful tools","Something clinicians and researchers can use"]];
+const renderFlow = (steps, active) => { const pipe = document.getElementById("pipeline");
+  pipe.innerHTML = steps.map(([t,d]) => `<li><span class="step">${t}</span><span class="detail">${d}</span></li>`).join(""); pipe.classList.toggle("is-active", !!active); };
+const CHRONO = ["lungs","eda","emg","argonne","stress","eeg","levitt","bd","friend"];
+const GLOSS = {
+  "Hemodynamics":"How blood moves through the body: pressure, flow and the heart’s output.",
+  "EEG":"Electrical activity of the brain, recorded from the scalp.",
+  "sEEG":"Brain activity recorded by thin electrodes placed inside the brain, usually while planning epilepsy treatment.",
+  "EMG":"Electrical activity produced by muscles when they contract.",
+  "EDA":"Tiny changes in skin sweat that rise with excitement or stress.",
+  "PPG":"Light-based pulse sensing, the same idea a smartwatch uses.",
+  "HRV":"How much the time between heartbeats varies; a window into the body’s stress-response system.",
+  "RSA":"The natural speeding and slowing of the heart with each breath.",
+  "F2-isoprostanes":"A chemical marker of oxidative stress, a kind of wear and tear on cells.",
+  "ACEs, PEARLS":"Questionnaires that capture adversity in childhood.",
+  "Bayley-IV":"A standard assessment of how an infant is developing.",
+  "Respiratory audio":"Breathing sounds, like those a doctor hears through a stethoscope.",
+  "CAN bus":"The network a car’s computers use to talk to each other.",
+  "ESP32":"A small, low-cost microcontroller."
+};
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("body");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* vertebrae */
+const vg = document.getElementById("verts");
+for (let y = 132; y <= 436; y += 11) { const r = document.createElementNS(NS,"rect"); Object.assign(r, {}); r.setAttribute("x",196); r.setAttribute("y",y); r.setAttribute("width",8); r.setAttribute("height",5); r.setAttribute("rx",1.5); r.setAttribute("class","vert"); vg.appendChild(r); }
+
+/* nodes */
+const ng = document.getElementById("nodes"), hits = document.getElementById("hits");
+function makeNode(key, n, cls, hitId) {
+  const g = document.createElementNS(NS,"g"); g.setAttribute("class","node " + cls); g.dataset.node = key;
+  g.setAttribute("transform",`translate(${n.x} ${n.y})`);
+  const anc = n.x > 640 ? ' class="ta-end" x="24"' : n.x < 160 ? ' class="ta-start" x="-24"' : "";
+  g.innerHTML = `<g class="nd"><circle class="ring" r="23"/><path class="ico" transform="scale(1.4)" d="${n.icon}"/><text y="42"${anc}>${n.label}</text></g>`;
+  if (hitId) { g.classList.add("hot"); g.dataset.id = hitId; svg.appendChild(g); } else ng.appendChild(g);
+  return g;
+}
+Object.entries(NODES).forEach(([k,n]) => makeNode(k, n, n.warm ? "warm" : ""));
+P.filter(p => p.node).forEach(p => makeNode(p.id, p.node, p.kind === "tool" ? "toolnode" : "warm", p.id));
+
+/* project markers on the body */
+const mg = document.getElementById("markers");
+P.filter(p => !p.node).forEach(p => {
+  const g = document.createElementNS(NS,"g"); g.setAttribute("class","marker" + (p.kind === "system" ? " sys" : "")); g.dataset.id = p.id;
+  g.setAttribute("transform",`translate(${p.anchor[0]} ${p.anchor[1]})`);
+  g.innerHTML = `<g class="mk"><circle class="mring" r="9"/><circle class="core" r="3"/></g>`; mg.appendChild(g);
+});
+
+/* keep the figure in view after a timeline tap on phones and tablets */
+const mapEl = document.querySelector(".map");
+function ensureMapVisible() {
+  const cs = getComputedStyle(document.documentElement), top = parseFloat(cs.getPropertyValue("--hdr")) + parseFloat(cs.getPropertyValue("--tlh"));
+  const r = mapEl.getBoundingClientRect(), gap = parseFloat(getComputedStyle(document.querySelector(".hero")).rowGap) || 0;
+  if (r.top < top - 4 || r.bottom > innerHeight + 2) scrollTo({ top: scrollY + r.top - top - gap, behavior: reduce ? "auto" : "smooth" });
+}
+document.getElementById("cap-open").addEventListener("click", () => current && openCase(current));
+/* measure header and timeline so the layout fits any screen height */
+function setVars() {
+  const s = document.documentElement.style;
+  s.setProperty("--hdr", document.querySelector("header.top").offsetHeight + "px");
+  s.setProperty("--tlh", document.querySelector(".tl-wrap").offsetHeight + "px");
+}
+addEventListener("resize", setVars); if (document.fonts) document.fonts.ready.then(setVars);
+
+/* timeline above the body */
+const tl = document.getElementById("tl");
+const YEARS = [["2022",1,1],["2023",2,2],["2024",3,3],["2025",4,5],["2026",6,9]];
+const EDU = [
+  { id:"nit", cls:"nit", from:1, to:4, label:"B.Tech, NIT Tiruchirappalli", when:"Jul 2021 – May 2025", phase:"During my B.Tech", full:"During my B.Tech in Electronics and Communication Engineering, NIT Tiruchirappalli" },
+  { id:"usc", cls:"usc", from:5, to:9, label:"M.S., University of Southern California", when:"Aug 2025 – May 2027", phase:"During my M.S.", full:"During my M.S. in Electrical and Computer Engineering, USC" }
+];
+CHRONO.forEach((id,i) => { const e = EDU.find(e => i+1 >= e.from && i+1 <= e.to); byId[id].phase = e ? e.phase : ""; byId[id].phaseFull = e ? e.full : ""; byId[id].edu = e ? e.id : ""; });
+tl.innerHTML =
+  YEARS.map(([y,a,b]) => `<div class="tl-yr" style="grid-column:${a} / ${b+1}" aria-hidden="true"><span>${y}</span></div>`).join("") +
+  CHRONO.map((id,i) => { const p = byId[id], pl = p.plain, now = /now/i.test(pl.when) || pl.when === "Dates to confirm";
+    return `<div class="tl-item${now ? " now" : ""}${i === 0 ? " first" : ""}${i === CHRONO.length-1 ? " last" : ""}" role="listitem" data-edu="${p.edu}" style="grid-column:${i+1}"><button class="tl-node${pl.beyond ? " beyond" : ""}" data-id="${id}" aria-pressed="false" aria-label="${pl.short}, ${pl.sector}, ${pl.when}"><span class="dot k-${p.kind}"></span><span class="tl-name">${pl.short}</span><span class="tl-date">${pl.when}</span></button></div>`; }).join("") +
+  EDU.map(e => `<button class="tl-edu ${e.cls}" data-edu="${e.id}" style="grid-column:${e.from} / ${e.to+1}"><strong>${e.label}</strong><span>${e.when}</span></button>`).join("");
+tl.querySelectorAll(".tl-edu").forEach(b => {
+  const on = v => { tl.classList.toggle("edu-focus", v); tl.querySelectorAll(".tl-item").forEach(it => it.classList.toggle("in-edu", v && it.dataset.edu === b.dataset.edu)); b.classList.toggle("on", v); };
+  b.addEventListener("pointerenter", () => on(true)); b.addEventListener("pointerleave", () => on(false));
+  b.addEventListener("focus", () => on(true)); b.addEventListener("blur", () => on(false));
+  b.addEventListener("click", () => { on(true); setTimeout(() => on(false), 1800); });
+});
+const tlNodes = [...tl.querySelectorAll(".tl-node")];
+setVars();
+const hoverable = () => matchMedia("(hover: hover)").matches;
+tlNodes.forEach(b => {
+  b.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") { stopTour(); setActive(b.dataset.id); } });
+  b.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") setActive(pinned); });
+  b.addEventListener("focus", () => { stopTour(); setActive(b.dataset.id); });
+  b.addEventListener("blur", () => setActive(pinned));
+  b.addEventListener("click", () => { pin(b.dataset.id); if (hoverable()) openCase(b.dataset.id); else ensureMapVisible(); });
+});
+document.getElementById("legend").innerHTML = Object.entries(KINDS).map(([k,v]) => `<li><span class="dot k-${k}"></span><span><strong style="color:var(--text);font-weight:500">${v.label}.</strong> ${v.desc}</span></li>`).join("");
+const card = p => `<li><p class="kind"><span class="dot k-${p.kind}"></span>${KINDS[p.kind].label}: ${p.region}</p><h3>${p.title}</h3><p>${p.org}. ${p.dates}</p><p>${md0(p.sum)}</p>${p.links ? `<ul class="links">${linkList(p)}</ul>` : ""}<button class="linkbtn" data-open="${p.id}">Read the case study</button></li>`;
+const FEAT = ["stress","eeg","levitt","friend","bd"], EARLY = ["emg","eda","lungs","argonne"];
+document.getElementById("projectlist").innerHTML = `<li class="group-label">Selected projects</li>` + FEAT.map(id => card(byId[id])).join("") + `<li class="group-label">Earlier work</li>` + EARLY.map(id => card(byId[id])).join("");
+const STRENGTHS = [
+  ["Adaptable","Gets up to speed on new problems",["friend","eeg","bd","levitt"]],
+  ["Rigorous","Validation planned before results",["eeg","friend","levitt","stress"]],
+  ["Thorough","Noisy signals, complex datasets",["stress","emg","eeg","levitt"]],
+  ["Discerning","Compares methods, picks what fits",["eeg","emg","eda","stress"]],
+  ["Builder","Tools shaped around their users",["levitt","friend","argonne"]],
+  ["Translator","Findings any audience can follow",["levitt","stress","friend"]]
+];
+document.getElementById("strengths").innerHTML = STRENGTHS.map(([t,d,ids]) => `<li><h4>${t}</h4><p>${d}</p><span class="seen">Seen in · tap to see it on the map</span><div class="pchips">${ids.map(id => `<button class="pchip" data-show="${id}" title="Show on the map"><span class="dot k-${byId[id].kind}"></span>${byId[id].plain.short}</button>`).join("")}</div></li>`).join("");
+const EXP = ["friend","bd","levitt","eeg","stress","argonne","emg","eda","lungs"];
+document.getElementById("timeline").innerHTML = EXP.map(id => { const p = byId[id]; return `<li><div class="when">${logoImg(p.id,"xlogo")}<span class="d">${p.dates}</span>${p.phase ? `<small>${p.phase}</small>` : ""}</div><div><h3>${p.role}</h3><p class="where">${p.org}${p.own ? ` · ${p.own}` : ""}</p><ul class="sigs skl">${p.plain.story.skills.map(s => `<li>${s}</li>`).join("")}</ul></div></li>`; }).join("");
+
+/* activation */
+const linksG = document.getElementById("links");
+let pinned = null, current = null;
+function setActive(id, quiet) {
+  if (id === current) return; current = id;
+  const p = id && byId[id];
+  if (p) svg.dataset.active = id; else delete svg.dataset.active;
+  svg.querySelectorAll(".node").forEach(n => n.classList.toggle("is-on", !!p && (p.settings.includes(n.dataset.node) || n.dataset.node === id)));
+  svg.classList.toggle("focus-mode", !!p);
+  svg.querySelectorAll(".marker").forEach(m => m.classList.toggle("on", m.dataset.id === id));
+  tlNodes.forEach(b => b.classList.toggle("is-on", b.dataset.id === id));
+  linksG.innerHTML = "";
+  if (quiet) return;
+  const cap = document.getElementById("cap"); cap.hidden = !p; document.getElementById("hint").classList.toggle("has-sel", !!p);
+  if (p) { document.getElementById("cap-dot").className = "dot k-" + p.kind; document.getElementById("cap-t").textContent = p.plain.short; document.getElementById("cap-s").textContent = p.plain.when; }
+  if (p) p.settings.forEach(s => {
+    const [ax,ay] = p.anchor, n = NODES[s], mx = (ax + n.x) / 2;
+    const path = document.createElementNS(NS,"path");
+    path.setAttribute("d",`M${ax},${ay} C${mx},${ay} ${mx},${n.y} ${n.x},${n.y}`);
+    const tone = (n.warm ? " warm" : "") + (p.kind === "tool" ? " toolc" : "");
+    path.setAttribute("class","link" + tone);
+    linksG.appendChild(path);
+    if (!reduce) {
+      const dot = document.createElementNS(NS,"circle"); dot.setAttribute("r","2.6"); dot.setAttribute("class","link-dot" + tone);
+      const am = document.createElementNS(NS,"animateMotion");
+      am.setAttribute("dur","1.4s"); am.setAttribute("fill","freeze"); am.setAttribute("begin","indefinite"); am.setAttribute("path", path.getAttribute("d"));
+      dot.appendChild(am); linksG.appendChild(dot); try { am.beginElement(); } catch(e) {}
+    }
+  });
+  document.getElementById("i-default").hidden = !!p;
+  document.getElementById("i-project").hidden = !p;
+  const pipe = document.getElementById("pipeline");
+  renderFlow(p ? FLOW[p.id] : FLOW_DEFAULT, !!p);
+  document.getElementById("pipe-title").textContent = p ? `How this project worked: ${p.plain.short}` : "How my work flows";
+  if (!p) return;
+  runPulse();
+  document.getElementById("i-dot").className = "dot k-" + p.kind;
+  document.getElementById("i-kind").textContent = `${KINDS[p.kind].label} · ${p.plain.sector}`;
+  document.getElementById("i-title").textContent = p.title;
+  document.getElementById("i-logo").innerHTML = logoImg(p.id,"ilogo");
+  document.getElementById("i-role").innerHTML = `<strong>${esc(p.role)}</strong><span>${esc(p.org)}</span>`;
+  document.getElementById("i-org").textContent = `${p.dates}` + (p.phaseFull ? ` · ${p.phaseFull}` : "");
+  document.getElementById("i-sum").innerHTML = md0(p.plain.one);
+  document.getElementById("i-sigs").innerHTML = p.sigs.map(s => `<li>${s}</li>`).join("");
+  document.getElementById("i-links").innerHTML = linkList(p);
+  scope.type = p.signal; scope.color = p.kind === "population" || p.kind === "device" ? getVar("--warm") : p.kind === "tool" ? getVar("--tool") : getVar("--sig");
+  animateScope();
+}
+function pin(id) {
+  stopTour(); pinned = id;
+  tlNodes.forEach(b => b.setAttribute("aria-pressed", b.dataset.id === id));
+  const node = tlNodes.find(b => b.dataset.id === id); if (node && !hoverable()) node.scrollIntoView({ block:"nearest", inline:"center", behavior: reduce ? "auto" : "smooth" });
+  setActive(id);
+}
+svg.addEventListener("pointerover", e => { const h = e.target.closest(".hot"); if (h && e.pointerType === "mouse") { stopTour(); setActive(h.dataset.id); } });
+svg.addEventListener("pointerout", e => { const h = e.target.closest(".hot"); if (h && e.pointerType === "mouse" && !h.contains(e.relatedTarget)) setActive(pinned); });
+svg.addEventListener("click", e => { const h = e.target.closest(".hot"); if (!h) return;
+  if (matchMedia("(hover: hover)").matches) { pin(h.dataset.id); openCase(h.dataset.id); } else pin(h.dataset.id); });
+document.getElementById("i-open").addEventListener("click", () => current && openCase(current));
+document.addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (b) openCase(b.dataset.open); });
+/* secondary chips: scroll up and show the project on the body map, where its case study opens */
+function showOnMap(id) {
+  const go = () => { pin(id); if (!hoverable()) ensureMapVisible(); };
+  if (hoverable()) { scrollTo({ top:0, behavior: reduce ? "auto" : "smooth" }); setTimeout(go, reduce ? 0 : 450); }
+  else { pin(id); setTimeout(ensureMapVisible, 50); }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-show]"); if (b) showOnMap(b.dataset.show); });
+
+/* case study */
+const dlg = document.getElementById("case");
+const SECTIONS = [["problem","The problem"],["why","Why it matters"],["contribution","My contribution"],["data","Data and signals"],["approach","Approach"],["tools","Tools"],["results","Results"],["impact","Impact"],["learned","What I learned"]];
+const md = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<span class="hl">$1</span>');
+const part = x => typeof x === "string" ? `<p>${md(x)}</p>` : `<p><span class="q">Content question: ${esc(x.q)}</span></p>`;
+let opener = null;
+function openCase(id) {
+  const p = byId[id]; opener = document.activeElement;
+  document.getElementById("c-dot").className = "dot k-" + p.kind;
+  document.getElementById("c-kind").textContent = `${KINDS[p.kind].label}: ${p.region}`;
+  document.getElementById("c-title").textContent = p.title;
+  document.getElementById("c-logo").innerHTML = logoImg(p.id,"clogo");
+  document.getElementById("c-meta").textContent = `${p.role}, ${p.org}. ${p.dates}` + (p.own ? ` · ${p.own}` : "");
+  document.getElementById("c-links").innerHTML = linkList(p);
+  const note = document.getElementById("c-note"); note.hidden = !p.note; note.textContent = p.note || "";
+  const st = p.plain.story, STEPS = [["problem","The problem"],["hard","What made it hard"],["did","What I did, and how I decided"],["result","What came out of it"],["helps","Who it’s for"],["next","What’s next"]].filter(([k]) => st[k]);
+  const gl = p.sigs.filter(s => GLOSS[s]);
+  document.getElementById("c-body").innerHTML =
+    `<h3 class="sub">The short version</h3><ol class="story">${STEPS.map(([k,l]) => `<li class="s-${k}"><span class="story-label">${l}</span>${st[k].map(part).join("")}</li>`).join("")}</ol>` +
+    (p.figs ? `<h3 class="sub">From the work</h3>${p.figs.map(f => `<figure class="cfig"><img src="${f.src}" alt="${esc(f.alt)}" loading="lazy"><figcaption>${esc(f.cap)}</figcaption></figure>`).join("")}` : "") +
+    (p.mentor ? `<p class="mentor">${esc(p.mentor)}</p>` : "") +
+    `<h3 class="sub">Skills shown</h3><ul class="sigs skl">${st.skills.map(s => `<li>${s}</li>`).join("")}</ul>` +
+    (gl.length ? `<h3 class="sub">The signals, in plain words</h3><dl class="gloss">${gl.map(s => `<dt>${s}</dt><dd>${GLOSS[s]}</dd>`).join("")}</dl>` : "") +
+    `<details class="tech"><summary>Technical case study <span>for engineers and hiring managers</span></summary>${SECTIONS.map(([k,l]) => `<section><h3>${l}</h3><div>${p.cs[k].map(part).join("")}</div></section>`).join("")}</details>`;
+  dlg.showModal(); dlg.scrollTop = 0; document.getElementById("c-close").focus();
+}
+document.getElementById("c-close").addEventListener("click", () => dlg.close());
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+dlg.addEventListener("close", () => opener && opener.focus && opener.focus());
+
+/* nav */
+const mb = document.querySelector(".menu-btn"), nl = document.getElementById("navlist");
+mb.addEventListener("click", () => { const o = nl.classList.toggle("open"); mb.setAttribute("aria-expanded", o); });
+nl.addEventListener("click", e => { if (e.target.tagName === "A") { nl.classList.remove("open"); mb.setAttribute("aria-expanded", false); } });
+
+/* biosignal scope */
+function getVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+const cv = document.getElementById("scope"), ctx = cv.getContext("2d");
+const scope = { type:"eeg", color:getVar("--sig") };
+const hash = n => { const s = Math.sin(n * 127.1) * 43758.5453; return (s - Math.floor(s)) * 2 - 1; };
+const sn = u => { const i = Math.floor(u), f = u - i, t = f * f * (3 - 2 * f); return hash(i) * (1 - t) + hash(i + 1) * t; };
+const G = (x, m, v) => Math.exp(-((x - m) ** 2) / v);
+const SIG = {
+  eeg: s => { const p = s % 240; return .32*Math.sin(s*.09)+.22*Math.sin(s*.23+1)+.3*sn(s*.17)+.15*sn(s*.6) - 1.9*G(p,200,18) + .9*G(p,212,60); },
+  ppg: s => { const ph = (s % 70) / 70; return 1.5*G(ph,.18,.006) + .5*G(ph,.45,.008) - .6 + .1*Math.sin(s*.01); },
+  emg: s => { const ph = (s % 200) / 200, env = ph < .45 ? Math.sin(ph/.45*Math.PI)**2 : .05; return env * hash(Math.floor(s)) * 1.5; },
+  eda: s => { const p = s % 260; return (p > 40 ? (1 - Math.exp(-(p-40)/12)) * Math.exp(-(p-40)/90) * 1.5 : 0) - .55 + .15*Math.sin(s*.004); },
+  resp: s => { const b = Math.sin(s*.025); return b*.75 + hash(Math.floor(s*2))*.28*Math.max(0,b); },
+  hrv: s => { const k = Math.floor(s/26); return .55*Math.sin(k*.42) + .25*sn(k*.8); }
+};
+function drawScope(prog) {
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+  if (!w) return;
+  if (cv.width !== w*dpr) { cv.width = w*dpr; cv.height = h*dpr; }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = scope.color; ctx.fillStyle = scope.color; ctx.lineWidth = 1.3;
+  if (scope.type === "grid") {
+    const cols = 18, rows = 5, cw = w/cols, ch = (h-10)/rows;
+    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) { if (c/cols > prog) continue; ctx.globalAlpha = .1 + .75*Math.max(0,(sn(c*.35 + r*1.7) + 1)/2); ctx.fillRect(c*cw+1, 5+r*ch+1, cw-2, ch-2); }
+    ctx.globalAlpha = 1; return;
+  }
+  if (scope.type === "bits") {
+    const cw = 9, rows = 4, ch = (h-10)/rows;
+    for (let r=0;r<rows;r++) for (let c=0;c*cw<w*prog;c++) { ctx.globalAlpha = hash(c*3.1 + r*17) > .1 ? .8 : .12; ctx.fillRect(c*cw+1, 5+r*ch+2, cw-2, ch-4); }
+    ctx.globalAlpha = 1; return;
+  }
+  const f = SIG[scope.type] || SIG.eeg, end = w*prog;
+  ctx.beginPath(); let y = h/2;
+  for (let x=0;x<=end;x++) { y = h/2 - f(x) * h*.28; x ? ctx.lineTo(x,y) : ctx.moveTo(x,y); }
+  ctx.stroke();
+  if (prog < 1) { ctx.beginPath(); ctx.arc(end, y, 2.5, 0, Math.PI*2); ctx.fill(); }
+}
+/* the trace draws across once, like a monitor sweep, then holds still */
+let raf = 0;
+function animateScope() {
+  cancelAnimationFrame(raf);
+  if (reduce) { drawScope(1); return; }
+  const t0 = performance.now(), dur = 2400;
+  const step = t => { const k = Math.min(1,(t - t0)/dur); drawScope(1 - Math.pow(1-k, 2)); if (k < 1) raf = requestAnimationFrame(step); };
+  raf = requestAnimationFrame(step);
+}
+addEventListener("resize", () => { if (current) drawScope(1); });
+
+/* pipeline pulse: once on load, once per new project, and occasionally */
+const pulseEl = document.querySelector(".pipe-wrap .pulse"); let lastPulse = -1e9;
+function runPulse() {
+  if (reduce) return; const now = performance.now(); if (now - lastPulse < 4000) return; lastPulse = now;
+  pulseEl.classList.remove("run"); void pulseEl.getBoundingClientRect(); pulseEl.classList.add("run");
+}
+setTimeout(runPulse, 900); setInterval(() => { if (!document.hidden) runPulse(); }, 35000);
+
+/* one-time guided tour so visitors see every project point; stops as soon as they interact */
+let tourT = 0, touring = !reduce;
+function stopTour() { if (!touring) return; touring = false; clearTimeout(tourT); if (!pinned) setActive(null); }
+if (touring) {
+  const order = CHRONO; let i = 0;
+  const step = () => {
+    if (!touring) return;
+    if (i < order.length) { setActive(order[i++], true); tourT = setTimeout(step, 650); }
+    else { touring = false; setActive(null); }
+  };
+  tourT = setTimeout(step, 1600);
+}
+
+/* right now: juggling three commitments, plays once when seen */
+(function(){
+  const fig = document.getElementById("juggle"), g = document.getElementById("balls");
+  const B = [["BD co-op","--warm",200],["M.S. classes","--tool",270],["Research","--sig",340]];
+  g.innerHTML = B.map(([t]) => `<g class="ball"><circle r="7"/><text dy="-12">${t}</text></g>`).join("");
+  const balls = [...g.children], cx = 140, cy = 84, rx = 78, ry = 52;
+  const place = a => balls.forEach((b,i) => { const ang = (B[i][2] + a) * Math.PI/180;
+    b.setAttribute("transform", `translate(${(cx + rx*Math.cos(ang)).toFixed(1)} ${(cy + ry*Math.sin(ang)).toFixed(1)})`);
+    b.querySelector("circle").style.fill = getVar(B[i][1]); });
+  place(0);
+  let raf = 0;
+  const play = () => { if (reduce) return; cancelAnimationFrame(raf); fig.classList.add("moving"); const t0 = performance.now(), dur = 4200;
+    const step = t => { const k = Math.min(1,(t - t0)/dur), e = 1 - Math.pow(1-k,3); place(-720*(1-e)); if (k < 1) raf = requestAnimationFrame(step); else fig.classList.remove("moving"); };
+    raf = requestAnimationFrame(step); };
+  if ("IntersectionObserver" in window) { const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { play(); io.disconnect(); } }, { threshold:.6 }); io.observe(fig); }
+  fig.querySelector("svg").addEventListener("click", play);
+  document.getElementById("jug-again").addEventListener("click", play);
+})();
+/* résumé download: in the Claude viewer, files are offered through the downloads capability; elsewhere the plain link works */
+(function(){
+  const btn = document.getElementById("cv-btn"), msg = document.getElementById("cv-msg"); let dl = null;
+  if (window.claude && claude.use) claude.use("downloads").then(n => { dl = n; }).catch(() => {});
+  btn.addEventListener("click", async e => {
+    if (!dl) return;
+    e.preventDefault();
+    try {
+      const blob = await (await fetch(btn.getAttribute("href"))).blob();
+      await dl.save({ filename:"Preeti_Ramesh_Resume.pdf", data:blob });
+      msg.textContent = "";
+    } catch (err) {
+      if (err && err.code === "declined") return;
+      if (err && err.code === "rate_limited") { msg.textContent = "One moment, then try again."; return; }
+      msg.textContent = "Download isn’t available in this view.";
+    }
+  });
+})();
+/* affiliations strip */
+document.getElementById("affil").innerHTML = [
+  ["usc","University of Southern California","M.S. in Electrical and Computer Engineering",[["Brain Image Group","eeg"],["Khan Lab","stress"]]],
+  ["bd","Becton, Dickinson and Company","Applied ML Co-op Intern",[["Wearable monitoring","bd"]]],
+  ["chla","Children’s Hospital Los Angeles","Two research labs",[["Levitt Lab","levitt"],["F.R.I.E.N.D. Lab","friend"]]],
+  ["argonne","Argonne National Laboratory","Machine Learning Intern",[["Virtual car computer","argonne"]]],
+  ["astar","A*STAR, Singapore","SIPGA awardee · Data Science Intern",[["Spinal stimulation","emg"]]],
+  ["iit","IIT (BHU) Varanasi","Research Intern",[["Emotion from skin","eda"]]],
+  ["nitt","NIT Tiruchirappalli","B.Tech · Research Intern",[["Digital stethoscope","lungs"]]]
+].map(([k,n,r,labs]) => `<li class="affil-tile"><span class="logo-box"><img src="${LOGO[k]}" alt="${n} logo" loading="lazy"></span><span class="affil-t"><strong>${n}</strong><span>${r}</span></span><span class="affil-labs">${labs.map(([l,id]) => `<button class="lab-chip" data-show="${id}" title="Show on the map"><span class="dot k-${byId[id].kind}"></span>${l}<span class="arrow" aria-hidden="true">↑ map</span></button>`).join("")}</span></li>`).join("");
+/* final look: fine-line figure, large points */
+svg.dataset.figure = "line";
+document.documentElement.style.setProperty("--mk", 1.7);
+document.documentElement.style.setProperty("--nd", 1.3);
+</script>
+</body>
+</html>
